@@ -8,7 +8,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_PREFIX_PATH "/opt/5.15.2/gcc_64")
 find_package(QT NAMES Qt5 COMPONENTS Widgets REQUIRED)
@@ -18,6 +18,8 @@ set(PROJECT_SOURCES
         src/main.cpp
         src/mainwindow.cpp
         src/mainwindow.h
+        src/main_vocabulary.h src/main_vocabulary.cpp
+        src/current_learning.h src/current_learning.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
