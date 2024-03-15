@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "main_vocabulary.h"
-#include "current_learning.h".h"
+#include "current_learning.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
