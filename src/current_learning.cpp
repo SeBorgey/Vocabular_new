@@ -29,9 +29,9 @@ void Current_learning::choose_words_for_learning()
 {
     current_words.clear();
     struct {
-      bool operator()(const Word* word1, const Word* word2) const {
-        return word1->last_learning < word2->last_learning;
-      }
+        bool operator()(const Word* word1, const Word* word2) const {
+            return word1->last_learning < word2->last_learning;
+        }
     } comparator;
     sort(main_vocabulary.words.begin(),main_vocabulary.words.end(),comparator);
     for (int i=0; i<20; i++){
