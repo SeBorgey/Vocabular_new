@@ -62,6 +62,7 @@ void Main_vocabulary::add_word(QString russian, QString english)
     words.push_back(word);
     english_words[english]=word;
     russian_words[russian]=word;
+    save_words();
 }
 
 void Main_vocabulary::save_words()

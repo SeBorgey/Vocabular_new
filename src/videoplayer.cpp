@@ -30,6 +30,11 @@ VideoPlayer::VideoPlayer(QWidget *parent)
     ui->pushButtonSub->setAttribute(Qt::WA_Hover);
 }
 
+void VideoPlayer::set_vocab(Main_vocabulary* vocab)
+{
+    main_vocab = vocab;
+}
+
 VideoPlayer::~VideoPlayer()
 {
     delete ui;
@@ -61,10 +66,12 @@ void VideoPlayer::positionChanged(qint64 duration)
         ui->horizontalSlider_Duration->setValue(duration/1000);
     }
     updateDuration(duration/1000);
+    if (englishsubs!=nullptr)
     if (englishsubs->readed)
-    englishText=englishsubs->getSubtitleText(static_cast<double>(duration)/1000);
+    englishText=englishsubs->getSubtitleText(static_cast<double>(duration));
+    if (russiansubs!=nullptr)
     if (russiansubs->readed)
-    russianText = russiansubs->getSubtitleText(static_cast<double>(duration)/1000);
+    russianText = russiansubs->getSubtitleText(static_cast<double>(duration));
     ui->pushButtonSub->setText(englishText);
 }
 
@@ -72,14 +79,18 @@ void VideoPlayer::positionChanged(qint64 duration)
 void VideoPlayer::on_actionOpen_triggered()
 {
     QString FileName=QFileDialog::getOpenFileName(this,tr("Select Video File"), tr("MP4 Files (*.mp4)"));
-
     Video = new QVideoWidget();
     Video->setGeometry(5, 5, ui->groupBox_Video->width() - 10, ui->groupBox_Video->height()-10);
     Video->setParent(ui->groupBox_Video);
+    Player->setParent(ui->groupBox_Video);
     Player->setVideoOutput(Video);
     Player->setSource(QUrl(FileName));
     Video->setVisible(true);
     Video->show();
+    ui->pushButtonAdd->raise();
+    ui->lineEditEnglish->raise();
+    ui->lineEditRussian->raise();
+    ui->pushButtonSub->raise();
 }
 
 
@@ -190,6 +201,7 @@ void VideoPlayer::on_pushButtonAdd_clicked()
     ui->lineEditRussian->setVisible(false);
     QString EnglishWord = ui->lineEditEnglish->selectedText();
     QString RussianWord = ui->lineEditRussian->selectedText();
+    main_vocab->add_word(RussianWord, EnglishWord);
     //todo: здесь прописать добавление в словарь
 }
 

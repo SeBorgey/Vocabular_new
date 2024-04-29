@@ -10,6 +10,7 @@
 #include <QtMultimediaWidgets/QtMultimediaWidgets>
 #include <QMediaPlayer>
 #include "backend.h"
+#include "main_vocabulary.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -22,6 +23,8 @@ class VideoPlayer : public QMainWindow
 
 public:
     explicit VideoPlayer(QWidget *parent = nullptr);
+    void set_vocab(Main_vocabulary* vocab);
+
     ~VideoPlayer();
 
 private slots:
@@ -54,6 +57,8 @@ private slots:
 protected:
     bool event(QEvent *event);
 private:
+    Main_vocabulary *main_vocab;
+
     BackEnd *russiansubs;
     BackEnd *englishsubs;
     Ui::MainWindow *ui;

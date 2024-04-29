@@ -32,30 +32,6 @@
     <property name="title">
      <string/>
     </property>
-    <widget class="QPushButton" name="pushButtonSub">
-     <property name="geometry">
-      <rect>
-       <x>30</x>
-       <y>340</y>
-       <width>731</width>
-       <height>71</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>20</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background: transparent;</string>
-     </property>
-     <property name="text">
-      <string>subs</string>
-     </property>
-     <property name="flat">
-      <bool>true</bool>
-     </property>
-    </widget>
     <widget class="QLineEdit" name="lineEditEnglish">
      <property name="geometry">
       <rect>
@@ -90,6 +66,19 @@
      </property>
      <property name="text">
       <string>ADD</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="pushButtonSub">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>340</y>
+       <width>701</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>PushButton</string>
      </property>
     </widget>
    </widget>
