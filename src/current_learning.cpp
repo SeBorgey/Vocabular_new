@@ -1,9 +1,9 @@
 #include "current_learning.h"
 
-Current_learning::Current_learning(Main_vocabulary* main_vocab):
-    main_vocabulary(main_vocab)
-{
+Current_learning::Current_learning(Main_vocabulary* main_vocab)
 
+{
+    main_vocabulary=main_vocab;
 }
 
 void Current_learning::accept()

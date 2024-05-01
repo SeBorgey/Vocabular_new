@@ -11,7 +11,11 @@ LearnUI::LearnUI(QWidget *parent)
 void LearnUI::set_vocab(Main_vocabulary * vocab)
 {
     main_vocab = vocab;
-    current_learning = new Current_learning(vocab);
+
+}
+
+void LearnUI::run_ui(){
+    current_learning = new Current_learning(main_vocab);
     current_learning->choose_words_for_learning();
     current=current_learning->get_current_word();
     ui->pushButtonWord->setText(current.first);

@@ -27,6 +27,8 @@ void MainMenu::on_pushButtonWatch_clicked()
 
 void MainMenu::on_pushButtonLearn_clicked()
 {
+    learnui->run_ui();
     learnui->show();
+
 }
 

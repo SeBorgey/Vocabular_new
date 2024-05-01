@@ -17,6 +17,7 @@ public:
     void set_vocab(Main_vocabulary* vocab);
     ~LearnUI();
 
+    void run_ui();
 private slots:
     void on_pushButtonDecline_clicked();
 
