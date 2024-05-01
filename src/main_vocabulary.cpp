@@ -6,9 +6,6 @@
 Main_vocabulary::Main_vocabulary()
 {
     get_all_words();
-    add_word("dog","собака");
-    add_word("cat","кошка");
-    save_words();
 }
 
 void Main_vocabulary::get_all_words()
