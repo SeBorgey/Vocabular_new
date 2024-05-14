@@ -1,6 +1,9 @@
 #include "mainmenu.h"
 #include <QApplication>
-
+// todo:
+//        добавить управление с клавиатуры
+//        поддержку формата mkv
+//        разоворот на весь экран
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);

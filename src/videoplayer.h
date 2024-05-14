@@ -10,6 +10,8 @@
 #include <QtMultimediaWidgets/QtMultimediaWidgets>
 #include <QMediaPlayer>
 #include "backend.h"
+#include "main_vocabulary.h"
+#include "multiselectlabel.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -22,6 +24,8 @@ class VideoPlayer : public QMainWindow
 
 public:
     explicit VideoPlayer(QWidget *parent = nullptr);
+    void set_vocab(Main_vocabulary* vocab);
+
     ~VideoPlayer();
 
 private slots:
@@ -54,12 +58,18 @@ private slots:
 protected:
     bool event(QEvent *event);
 private:
+    Main_vocabulary *main_vocab;
+    MultiSelectLabel* lineEditEnglish_new;
+    MultiSelectLabel* lineEditRussian_new;
     BackEnd *russiansubs;
     BackEnd *englishsubs;
     Ui::MainWindow *ui;
     QMediaPlayer *Player;
     QAudioOutput *audioOutput;
-    QVideoWidget *Video;
+    // QVideoWidget *Video;
+    QGraphicsView *view;
+    QGraphicsScene *scene;
+    QGraphicsVideoItem *item;
     qint64 mDuration;
     bool IS_Pause = true;
     bool IS_Muted = false;

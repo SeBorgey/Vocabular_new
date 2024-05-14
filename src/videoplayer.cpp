@@ -25,9 +25,46 @@ VideoPlayer::VideoPlayer(QWidget *parent)
     connect(Player, &QMediaPlayer::positionChanged, this, &VideoPlayer::positionChanged);
     ui->horizontalSlider_Duration->setRange(0,Player->duration()/1000);
     ui->pushButtonAdd->setVisible(false);
-    ui->lineEditEnglish->setVisible(false);
-    ui->lineEditRussian->setVisible(false);
+
+
+
+
+    lineEditEnglish_new = new MultiSelectLabel(ui->groupBox_Video);
+    lineEditEnglish_new->setObjectName("lineEditEnglish_new");
+    lineEditEnglish_new->setGeometry(QRect(40, 40, 731, 61));
+    lineEditRussian_new = new MultiSelectLabel(ui->groupBox_Video);
+    lineEditRussian_new->setObjectName("lineEditRussian_new");
+    lineEditRussian_new->setGeometry(QRect(40, 130, 731, 61));
+
+
+    lineEditEnglish_new->setVisible(false);
+    lineEditRussian_new->setVisible(false);
     ui->pushButtonSub->setAttribute(Qt::WA_Hover);
+    auto shadow = new QGraphicsDropShadowEffect();
+    shadow->setBlurRadius(20);
+    shadow->setOffset(0,0);
+    shadow->setColor(Qt::black);
+    ui->pushButtonSub->setGraphicsEffect(shadow);
+    view = new QGraphicsView(ui->groupBox_Video);
+    view->setGeometry(0, 0, ui->groupBox_Video->width(), ui->groupBox_Video->height());
+    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    view->setAlignment(Qt::AlignCenter);
+
+    scene = new QGraphicsScene(view);
+    item = new QGraphicsVideoItem();
+
+    item->setAspectRatioMode(Qt::KeepAspectRatio);
+    item->setSize(QSizeF(view->size().width(), view->size().height()));
+
+    view->setScene(scene);
+    scene->addItem(item);
+}
+
+void VideoPlayer::set_vocab(Main_vocabulary* vocab)
+{
+    main_vocab = vocab;
 }
 
 VideoPlayer::~VideoPlayer()
@@ -61,10 +98,12 @@ void VideoPlayer::positionChanged(qint64 duration)
         ui->horizontalSlider_Duration->setValue(duration/1000);
     }
     updateDuration(duration/1000);
+    if (englishsubs!=nullptr)
     if (englishsubs->readed)
-    englishText=englishsubs->getSubtitleText(static_cast<double>(duration)/1000);
+    englishText=englishsubs->getSubtitleText(static_cast<double>(duration));
+    if (russiansubs!=nullptr)
     if (russiansubs->readed)
-    russianText = russiansubs->getSubtitleText(static_cast<double>(duration)/1000);
+    russianText = russiansubs->getSubtitleText(static_cast<double>(duration));
     ui->pushButtonSub->setText(englishText);
 }
 
@@ -72,14 +111,13 @@ void VideoPlayer::positionChanged(qint64 duration)
 void VideoPlayer::on_actionOpen_triggered()
 {
     QString FileName=QFileDialog::getOpenFileName(this,tr("Select Video File"), tr("MP4 Files (*.mp4)"));
-
-    Video = new QVideoWidget();
-    Video->setGeometry(5, 5, ui->groupBox_Video->width() - 10, ui->groupBox_Video->height()-10);
-    Video->setParent(ui->groupBox_Video);
-    Player->setVideoOutput(Video);
+    Player->setVideoOutput(item);
     Player->setSource(QUrl(FileName));
-    Video->setVisible(true);
-    Video->show();
+    view->show();
+    ui->pushButtonAdd->raise();
+    lineEditEnglish_new->raise();
+    lineEditRussian_new->raise();
+    ui->pushButtonSub->raise();
 }
 
 
@@ -103,6 +141,9 @@ void VideoPlayer::on_pushButton_Play_Pause_clicked()
         Player->pause();
         ui->pushButton_Play_Pause->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     }
+    ui->pushButtonAdd->setVisible(false);
+    lineEditEnglish_new->setVisible(false);
+    lineEditRussian_new->setVisible(false);
 }
 
 
@@ -135,14 +176,14 @@ void VideoPlayer::on_horizontalSlider_Volume_valueChanged(int value)
 
 void VideoPlayer::on_pushButton_Seek_Forward_clicked()
 {
-    ui->horizontalSlider_Duration->setValue(ui->horizontalSlider_Duration->value()-20);
+    ui->horizontalSlider_Duration->setValue(ui->horizontalSlider_Duration->value()+20);
     Player->setPosition(ui->horizontalSlider_Duration->value()*1000);
 }
 
 
 void VideoPlayer::on_pushButton_Seek_Backward_clicked()
 {
-    ui->horizontalSlider_Duration->setValue(ui->horizontalSlider_Duration->value()+20);
+    ui->horizontalSlider_Duration->setValue(ui->horizontalSlider_Duration->value()-20);
     Player->setPosition(ui->horizontalSlider_Duration->value()*1000);
 }
 
@@ -176,20 +217,20 @@ void VideoPlayer::on_actionrussian_triggered()
 void VideoPlayer::on_pushButtonSub_clicked()
 {
     ui->pushButtonAdd->setVisible(true);
-    ui->lineEditEnglish->setVisible(true);
-    ui->lineEditRussian->setVisible(true);
-    ui->lineEditEnglish->setText(englishText);
-    ui->lineEditRussian->setText(russianText);
+    lineEditEnglish_new->setVisible(true);
+    lineEditRussian_new->setVisible(true);
+    lineEditEnglish_new->setText(englishText);
+    lineEditRussian_new->setText(russianText);
 }
 
 
 void VideoPlayer::on_pushButtonAdd_clicked()
 {
     ui->pushButtonAdd->setVisible(false);
-    ui->lineEditEnglish->setVisible(false);
-    ui->lineEditRussian->setVisible(false);
-    QString EnglishWord = ui->lineEditEnglish->selectedText();
-    QString RussianWord = ui->lineEditRussian->selectedText();
-    //todo: здесь прописать добавление в словарь
+    lineEditEnglish_new->setVisible(false);
+    lineEditRussian_new->setVisible(false);
+    QString EnglishWord = lineEditEnglish_new->selectedText();
+    QString RussianWord = lineEditRussian_new->selectedText();
+    main_vocab->add_word(RussianWord, EnglishWord);
 }
 

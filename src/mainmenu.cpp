@@ -7,8 +7,11 @@ MainMenu::MainMenu(QWidget *parent)
     , ui(new Ui::MainMenu)
     , mainwindow(new VideoPlayer)
     , learnui(new LearnUI)
+    , main_vocab(new Main_vocabulary)
 {
     ui->setupUi(this);
+    learnui->set_vocab(main_vocab);
+    mainwindow->set_vocab(main_vocab);
 }
 
 MainMenu::~MainMenu()
@@ -24,6 +27,8 @@ void MainMenu::on_pushButtonWatch_clicked()
 
 void MainMenu::on_pushButtonLearn_clicked()
 {
+    learnui->run_ui();
     learnui->show();
+
 }
 

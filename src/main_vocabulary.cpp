@@ -6,9 +6,6 @@
 Main_vocabulary::Main_vocabulary()
 {
     get_all_words();
-    add_word("dog","собака");
-    add_word("cat","кошка");
-    save_words();
 }
 
 void Main_vocabulary::get_all_words()
@@ -62,6 +59,7 @@ void Main_vocabulary::add_word(QString russian, QString english)
     words.push_back(word);
     english_words[english]=word;
     russian_words[russian]=word;
+    save_words();
 }
 
 void Main_vocabulary::save_words()

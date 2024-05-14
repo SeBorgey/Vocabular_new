@@ -4,6 +4,7 @@
 #include <QGroupBox>
 #include "videoplayer.h"
 #include "learnui.h"
+#include "main_vocabulary.h"
 namespace Ui {
 class MainMenu;
 }
@@ -25,6 +26,7 @@ private:
     VideoPlayer *mainwindow;
     LearnUI *learnui;
     Ui::MainMenu *ui;
+    Main_vocabulary *main_vocab;
 };
 
 #endif // MAINMENU_H
