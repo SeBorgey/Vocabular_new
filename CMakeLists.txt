@@ -46,6 +46,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
         src/multiselectlabel.h
         src/multiselectlabel.cpp
+        src/subtitleextractor.h src/subtitleextractor.cpp
+        src/subtitleselectiondialog.h src/subtitleselectiondialog.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Vocabular APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

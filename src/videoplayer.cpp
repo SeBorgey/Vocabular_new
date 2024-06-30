@@ -1,7 +1,7 @@
 #include "videoplayer.h"
 #include "./ui_mainwindow.h"
 #include "QDebug"
-
+#include <QRegularExpression>
 
 VideoPlayer::VideoPlayer(QWidget *parent)
     : QMainWindow(parent)
@@ -26,16 +26,12 @@ VideoPlayer::VideoPlayer(QWidget *parent)
     ui->horizontalSlider_Duration->setRange(0,Player->duration()/1000);
     ui->pushButtonAdd->setVisible(false);
 
-
-
-
     lineEditEnglish_new = new MultiSelectLabel(ui->groupBox_Video);
     lineEditEnglish_new->setObjectName("lineEditEnglish_new");
     lineEditEnglish_new->setGeometry(QRect(40, 40, 731, 61));
     lineEditRussian_new = new MultiSelectLabel(ui->groupBox_Video);
     lineEditRussian_new->setObjectName("lineEditRussian_new");
     lineEditRussian_new->setGeometry(QRect(40, 130, 731, 61));
-
 
     lineEditEnglish_new->setVisible(false);
     lineEditRussian_new->setVisible(false);
@@ -60,6 +56,21 @@ VideoPlayer::VideoPlayer(QWidget *parent)
 
     view->setScene(scene);
     scene->addItem(item);
+
+    lineEditFileName = new QLineEdit(ui->toolBar);
+    lineEditEnglishSubs = new QLineEdit(ui->toolBar);
+    lineEditRussianSubs = new QLineEdit(ui->toolBar);
+
+    lineEditFileName->setGeometry(QRect(100,0,150,30));
+    lineEditEnglishSubs->setGeometry(QRect(500,0,150,30));
+    lineEditRussianSubs->setGeometry(QRect(300,0,150,30));
+    lineEditFileName->setPlaceholderText("File name");
+    lineEditEnglishSubs->setPlaceholderText("English subs");
+    lineEditRussianSubs->setPlaceholderText("Russian subs");
+
+    pushButtonManualSubs = new QPushButton("Manual",ui->toolBar);
+    pushButtonManualSubs->setGeometry(QRect(700,0,150,30));
+    connect(pushButtonManualSubs, &QPushButton::clicked, this, &VideoPlayer::showSubtitleSelectionDialog);
 }
 
 void VideoPlayer::set_vocab(Main_vocabulary* vocab)
@@ -86,6 +97,49 @@ bool VideoPlayer::event(QEvent * e)
     return QWidget::event(e);
 }
 
+void VideoPlayer::showSubtitleSelectionDialog()
+{
+    SubtitleSelectionDialog dialog(FileName, extractor.tracks, this);
+    connect(&dialog, &SubtitleSelectionDialog::subtitlesSelected, this, &VideoPlayer::onSubtitlesSelected);
+    dialog.exec();
+}
+
+void VideoPlayer::onSubtitlesSelected(const QString& russianPath, const QString& englishPath,
+                                       SubtitleTrack& russianTrack,  SubtitleTrack& englishTrack)
+{
+    if (!russianPath.isEmpty()) {
+        russianSubsPath = russianPath;
+        lineEditEnglishSubs->setText(russianSubsPath);
+
+    } else if (russianTrack.number != -1) {
+        russianTrack.language="rus";
+        extractor.extractSubtitleTrack(russianTrack);
+        russianSubsPath = extractor.russianSubtitlePath;
+        lineEditRussianSubs->setText(russianTrack.name);
+    }
+
+    if (!englishPath.isEmpty()) {
+        englishSubsPath = englishPath;
+        lineEditEnglishSubs->setText(englishSubsPath);
+    } else if (englishTrack.number != -1) {
+        englishTrack.language="eng";
+        extractor.extractSubtitleTrack(englishTrack);
+        englishSubsPath = extractor.englishSubtitlePath;
+        lineEditEnglishSubs->setText(englishTrack.name);
+    }
+    activateSubs();
+}
+
+
+void VideoPlayer::activateSubs(){
+    delete englishsubs;
+    delete russiansubs;
+    englishsubs = new BackEnd(englishSubsPath);
+    russiansubs = new BackEnd(russianSubsPath);
+    // QFile(englishSubsPath).remove();
+    // QFile(russianSubsPath).remove();
+}
+
 void VideoPlayer::durationChanged(qint64 duration)
 {
     mDuration = duration/1000;
@@ -110,7 +164,7 @@ void VideoPlayer::positionChanged(qint64 duration)
 
 void VideoPlayer::on_actionOpen_triggered()
 {
-    QString FileName=QFileDialog::getOpenFileName(this,tr("Select Video File"), tr("MP4 Files (*.mp4)"));
+    FileName=QFileDialog::getOpenFileName(this,tr("Select Video File"));
     Player->setVideoOutput(item);
     Player->setSource(QUrl(FileName));
     view->show();
@@ -118,17 +172,103 @@ void VideoPlayer::on_actionOpen_triggered()
     lineEditEnglish_new->raise();
     lineEditRussian_new->raise();
     ui->pushButtonSub->raise();
+    lineEditFileName->setText(FileName);
+    lineEditEnglishSubs->clear();
+    lineEditRussianSubs->clear();
+    if (tryFindSubOut())
+        return;
+    else
+        tryFindSubIn();
+    activateSubs();
 }
 
+bool VideoPlayer::tryFindSubOut()
+{
+    QFileInfo videoFileInfo(FileName);
+    QString videoFileName = videoFileInfo.completeBaseName();
+    QDir parentDir = videoFileInfo.dir();
+    parentDir.cdUp();
+
+    QDirIterator it(parentDir.path(), QStringList() << "*.srt", QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QString filePath = it.next();
+        QFileInfo fileInfo(filePath);
+        QString fileName = fileInfo.fileName().toLower();
+
+        if (fileName.contains(videoFileName.toLower())) {
+            QString fullPath = fileInfo.absoluteFilePath();
+            if ((fullPath.toLower().contains("rus") || fileName.toLower().contains("rus")) &&
+                russianSubsPath.isEmpty()) {
+                russianSubsPath = fullPath;
+            } else if ((fullPath.toLower().contains("eng") || fileName.toLower().contains("eng")) &&
+                       englishSubsPath.isEmpty()) {
+                englishSubsPath = fullPath;
+            }
+
+            if (!russianSubsPath.isEmpty() && !englishSubsPath.isEmpty()) {
+                lineEditEnglishSubs->setText(englishSubsPath);
+                lineEditRussianSubs->setText(russianSubsPath);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+
+QString detectLanguage(const QString& filePath)
+{
+    QFile file(filePath);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&file);
+        QString content = in.read(1000);
+        file.close();
+
+        if (content.contains(QRegularExpression("[а-яА-Я]"))) {
+            return "rus";
+        } else if (content.contains(QRegularExpression("[a-zA-Z]"))) {
+            return "eng";
+        }
+    }
+    return "unknown";
+}
+
+bool VideoPlayer::tryFindSubIn()
+{
+    extractor.setFileName(FileName);
+    QList<SubtitleTrack> tracks = extractor.getSubtitleTracks();
+
+    bool russianFound = false;
+    bool englishFound = false;
+
+
+    for (const SubtitleTrack& track : tracks) {
+        if (track.language.toLower().contains("rus") && !russianFound) {
+            extractor.extractSubtitleTrack(track);
+            russianFound = true;
+            lineEditRussianSubs->setText(track.name);
+        } else if (track.language.toLower().contains("eng") && !englishFound) {
+            extractor.extractSubtitleTrack(track);
+            englishFound = true;
+            lineEditEnglishSubs->setText(track.name);
+        }
+
+        if (russianFound && englishFound) {
+            break;
+        }
+    }
+
+    russianSubsPath = extractor.russianSubtitlePath;
+    englishSubsPath = extractor.englishSubtitlePath;
+
+    return !russianSubsPath.isEmpty() && !englishSubsPath.isEmpty();
+}
 
 void VideoPlayer::on_horizontalSlider_Duration_valueChanged(int value)
 {
     Player->setPosition(value*1000);
 }
-
-
-
-
 
 void VideoPlayer::on_pushButton_Play_Pause_clicked()
 {

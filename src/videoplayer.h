@@ -9,9 +9,13 @@
 #include <QtMultimedia/QMediaPlayer>
 #include <QtMultimediaWidgets/QtMultimediaWidgets>
 #include <QMediaPlayer>
+#include <QRegularExpression>
 #include "backend.h"
 #include "main_vocabulary.h"
 #include "multiselectlabel.h"
+#include "subtitleextractor.h"
+#include "subtitleselectiondialog.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -32,7 +36,7 @@ private slots:
     void durationChanged(qint64 duration);
     void positionChanged(qint64 duration);
     void on_actionOpen_triggered();
-
+    void onSubtitlesSelected(const QString& russianPath, const QString& englishPath, SubtitleTrack& russianTrack, SubtitleTrack& englishTrack);
     void on_horizontalSlider_Duration_valueChanged(int value);
 
 
@@ -58,11 +62,21 @@ private slots:
 protected:
     bool event(QEvent *event);
 private:
+    SubtitleExtractor extractor;
+    QString englishSubsPath;
+    QString russianSubsPath;
+    bool tryFindSubOut();
+    bool tryFindSubIn();
+    QString FileName;
     Main_vocabulary *main_vocab;
     MultiSelectLabel* lineEditEnglish_new;
     MultiSelectLabel* lineEditRussian_new;
-    BackEnd *russiansubs;
-    BackEnd *englishsubs;
+    QLineEdit* lineEditFileName;
+    QLineEdit* lineEditEnglishSubs;
+    QLineEdit* lineEditRussianSubs;
+    QPushButton* pushButtonManualSubs;
+    BackEnd *russiansubs = nullptr;
+    BackEnd *englishsubs = nullptr;
     Ui::MainWindow *ui;
     QMediaPlayer *Player;
     QAudioOutput *audioOutput;
@@ -76,5 +90,7 @@ private:
     QString russianText;
     QString englishText;
     void updateDuration(qint64 duration);
+    void showSubtitleSelectionDialog();
+    void activateSubs();
 };
 #endif // VIDEOPLAYER_H
