@@ -54,10 +54,14 @@ public:
     QPushButton *manualSubsButton;
     QGroupBox *groupBox_Video;
 
+    void updateVideoSize();
+protected:
+    void resizeEvent(QResizeEvent *event);
 private:
     void createWidgets();
     void setupLayout();
     void createMenuAndToolbar(QMainWindow *mainWindow);
+    void updateFontSizes();
 };
 
 #endif // VIDEOPLAYERUI_H

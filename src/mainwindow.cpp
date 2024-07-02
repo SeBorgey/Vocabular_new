@@ -78,6 +78,10 @@ void MainWindow::onOpenFileTriggered()
             showSubtitleSelectionDialog();
         }
     }
+
+    // ui->videoView->setSize(ui->groupBox_Video->size());
+    ui->videoView->setGeometry(0, 0, ui->groupBox_Video->width(), ui->groupBox_Video->height());
+    ui->videoItem->setSize(ui->groupBox_Video->size());
 }
 
 bool MainWindow::tryFindSubtitles()

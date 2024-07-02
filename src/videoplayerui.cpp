@@ -12,6 +12,8 @@ VideoPlayerUI::VideoPlayerUI(QWidget *parent)
     if (auto mainWindow = qobject_cast<QMainWindow*>(parent)) {
         createMenuAndToolbar(mainWindow);
     }
+    updateVideoSize();
+    updateFontSizes();
 }
 
 void VideoPlayerUI::createWidgets()
@@ -28,15 +30,14 @@ void VideoPlayerUI::createWidgets()
     videoView = new QGraphicsView(groupBox_Video);
     videoItem = new QGraphicsVideoItem();
 
-    // videoView->setGeometry(0,0,groupBox_Video->width(),groupBox_Video->height());
-    groupBox_Video->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding); //это надо
+    groupBox_Video->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     videoView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     videoView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     videoView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    videoView->setAlignment(Qt::AlignCenter);
+    videoView->setAlignment(Qt::AlignLeft);
     videoItem->setAspectRatioMode(Qt::KeepAspectRatio);
-    videoItem->setSize(QSizeF(videoView->size().width(), videoView->size().height()));
-
+    videoItem->setSize(groupBox_Video->size());
+    videoItem->setPos(0, 0);
 
     fileNameEdit = new QLineEdit(this);
     englishSubsEdit = new QLineEdit(this);
@@ -59,31 +60,28 @@ void VideoPlayerUI::createWidgets()
 
     englishSubtitleEdit = new MultiSelectLabel(groupBox_Video);
     russianSubtitleEdit = new MultiSelectLabel(groupBox_Video);
-    englishSubtitleEdit->setGeometry(QRect(40, 40, 731, 61));
-    russianSubtitleEdit->setGeometry(QRect(40, 130, 731, 61));
-    // englishSubtitleEdit->setVisible(false);
-    // russianSubtitleEdit->setVisible(false);
-
 
     subtitleButton = new QPushButton(groupBox_Video);
     subtitleButton->setText(tr("Subtitle"));
-    subtitleButton->setGeometry(QRect(50, 320, 701, 71));
     QFont font;
     font.setBold(true);
     subtitleButton->setFont(font);
-    subtitleButton->setStyleSheet(QString::fromUtf8("background-color: transparent; border: none; color: white; font-size: 20px; font-weight: bold; "));
+    subtitleButton->setStyleSheet(QString::fromUtf8("background-color: transparent; border: none; color: white; font-weight: bold; "));
 
-    // subtitleButton->setAttribute(Qt::WA_Hover);
-    // auto shadow = new QGraphicsDropShadowEffect();
-    // shadow->setBlurRadius(20);
-    // shadow->setOffset(0,0);
-    // shadow->setColor(Qt::black);
-    // subtitleButton->setGraphicsEffect(shadow);
+    subtitleButton->setAttribute(Qt::WA_Hover);
+    auto shadow = new QGraphicsDropShadowEffect();
+    shadow->setBlurRadius(20);
+    shadow->setOffset(0,0);
+    shadow->setColor(Qt::black);
+    subtitleButton->setGraphicsEffect(shadow);
 
     addWordButton = new QPushButton(tr("Add"), groupBox_Video);
-    // addWordButton->setVisible(false);
-    addWordButton->setGeometry(QRect(300, 210, 201, 61));
+    addWordButton->setVisible(false);
+    addWordButton->setFixedSize(200, 60);
 
+    QGraphicsScene *scene = new QGraphicsScene(videoView);
+    videoView->setScene(scene);
+    scene->addItem(videoItem);
 
 }
 
@@ -93,7 +91,6 @@ void VideoPlayerUI::setupLayout()
 
     QHBoxLayout *videoLayout = new QHBoxLayout();
 
-    // videoLayout->addWidget(videoView);
     videoLayout->addWidget(groupBox_Video);
     mainLayout->addLayout(videoLayout);
 
@@ -113,30 +110,40 @@ void VideoPlayerUI::setupLayout()
     controlLayout->addWidget(volumeSlider);
     mainLayout->addLayout(controlLayout);
 
-    // QHBoxLayout *subtitleLayout = new QHBoxLayout();
-    // subtitleLayout->addWidget(subtitleButton);
-    // mainLayout->addLayout(subtitleLayout);
-
-    // QHBoxLayout *wordAddLayout = new QHBoxLayout();
-    // wordAddLayout->addWidget(englishSubtitleEdit);
-    // wordAddLayout->addWidget(russianSubtitleEdit);
-    // wordAddLayout->addWidget(addWordButton);
-    // mainLayout->addLayout(wordAddLayout);
-
     setLayout(mainLayout);
 
-    QGraphicsScene *scene = new QGraphicsScene(videoView);
+    QVBoxLayout *innerLayout = new QVBoxLayout(groupBox_Video);
 
-    videoView->setScene(scene);
-    scene->addItem(videoItem);
-    videoView->setAlignment(Qt::AlignCenter);
+    innerLayout->addStretch(1);
 
-    videoView->show();
-    addWordButton->raise();
-    englishSubtitleEdit->raise();
-    russianSubtitleEdit->raise();
-    subtitleButton->raise();
+    QHBoxLayout *englishSubLayout = new QHBoxLayout();
+    englishSubLayout->addStretch(1);
+    englishSubLayout->addWidget(englishSubtitleEdit);
+    englishSubLayout->addStretch(1);
+    innerLayout->addLayout(englishSubLayout);
 
+    innerLayout->addSpacing(10);
+    QHBoxLayout *russianSubLayout = new QHBoxLayout();
+    russianSubLayout->addStretch(1);
+    russianSubLayout->addWidget(russianSubtitleEdit);
+    russianSubLayout->addStretch(1);
+    innerLayout->addLayout(russianSubLayout);
+
+    innerLayout->addStretch(2);
+
+    QHBoxLayout *addButtonLayout = new QHBoxLayout();
+    addButtonLayout->addStretch(1);
+    addButtonLayout->addWidget(addWordButton);
+    addButtonLayout->addStretch(1);
+    innerLayout->addLayout(addButtonLayout);
+
+    innerLayout->addStretch(1);
+
+    innerLayout->addWidget(subtitleButton, 0, Qt::AlignHCenter);
+
+    innerLayout->addStretch(1);
+
+    groupBox_Video->setLayout(innerLayout);
 }
 
 void VideoPlayerUI::createMenuAndToolbar(QMainWindow *mainWindow)
@@ -162,4 +169,42 @@ void VideoPlayerUI::createMenuAndToolbar(QMainWindow *mainWindow)
     toolBar->addWidget(manualSubsButton);
 
     mainWindow->addToolBar(toolBar);
+}
+
+void VideoPlayerUI::updateVideoSize()
+{
+    videoView->setGeometry(0, 0, groupBox_Video->width(), groupBox_Video->height());
+
+    videoView->scene()->setSceneRect(0, 0, videoView->width(), videoView->height());
+
+    videoItem->setSize(groupBox_Video->size());
+
+    videoView->update();
+}
+void VideoPlayerUI::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    updateVideoSize();
+    updateFontSizes();
+}
+
+void VideoPlayerUI::updateFontSizes()
+{
+    int windowWidth = groupBox_Video->width();
+    int windowHeight = groupBox_Video->height();
+    int baseFontSize = qMin(windowWidth, windowHeight) / 20;
+
+    QFont subtitleFont = englishSubtitleEdit->font();
+    subtitleFont.setPointSize(baseFontSize);
+    englishSubtitleEdit->setFont(subtitleFont);
+    russianSubtitleEdit->setFont(subtitleFont);
+
+    QFont buttonFont = subtitleButton->font();
+    buttonFont.setPointSize(baseFontSize);
+    subtitleButton->setFont(buttonFont);
+
+    int subtitleHeight = windowHeight / 5;
+    englishSubtitleEdit->setFixedHeight(subtitleHeight);
+    russianSubtitleEdit->setFixedHeight(subtitleHeight);
+
 }

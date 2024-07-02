@@ -26,7 +26,7 @@ void MainMenu::on_pushButtonWatch_clicked()
         mainWindow = new MainWindow();
         mainWindow->setVocabulary(main_vocab);
     }
-    mainWindow->show();
+    mainWindow->showMaximized();
 }
 
 
