@@ -54,12 +54,12 @@ void VideoPlayerController::setPosition(qint64 position)
 
 void VideoPlayerController::seekForward()
 {
-    setPosition(position() + 20000); // 20 seconds forward
+    setPosition(position() + 5000); // 5 seconds forward
 }
 
 void VideoPlayerController::seekBackward()
 {
-    setPosition(position() - 20000); // 20 seconds backward
+    setPosition(position() - 5000); // 5 seconds backward
 }
 
 qint64 VideoPlayerController::position() const

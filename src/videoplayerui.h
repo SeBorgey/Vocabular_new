@@ -54,6 +54,7 @@ public:
     QPushButton *seekBackwardButton;
     QPushButton *manualSubsButton;
     QGroupBox *groupBox_Video;
+    QHBoxLayout *videoLayout;
 
     void updateVideoSize();
 protected:
@@ -63,6 +64,25 @@ private:
     void setupLayout();
     void createMenuAndToolbar(QMainWindow *mainWindow);
     void updateFontSizes();
+public:
+    void enterFullScreen();
+    void exitFullScreen();
+    bool isFullScreen;
+private:
+
+    QRect previousGeometry;
+    Qt::WindowFlags originalFlags;
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
+signals:
+    void fullscreenToggled();
+private:
+    QLayout* originalLayout;
+    int originalIndex;
+private:
+    QList<QWidget*> originalWidgetOrder;
 };
 
 #endif // VIDEOPLAYERUI_H

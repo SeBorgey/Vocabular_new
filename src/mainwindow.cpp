@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     playerController->setVideoOutput(ui->videoItem);
     setWindowTitle("Watch");
+    setFocusPolicy(Qt::StrongFocus);
+    setFocus();
 }
 
 MainWindow::~MainWindow()
@@ -49,6 +51,7 @@ bool MainWindow::event(QEvent *event)
 
 void MainWindow::setupConnections()
 {
+    connect(ui, &VideoPlayerUI::fullscreenToggled, this, &MainWindow::toggleFullScreen);
     connect(ui->openAction, &QAction::triggered, this, &MainWindow::onOpenFileTriggered);
     connect(ui->playPauseButton, &QPushButton::clicked, this, &MainWindow::onPlayPauseClicked);
     connect(ui->stopButton, &QPushButton::clicked, this, &MainWindow::onStopClicked);
@@ -293,4 +296,54 @@ void MainWindow::updateDurationDisplay(qint64 duration)
     QString format = playerController->duration() > 3600000 ? "hh:mm:ss" : "mm:ss";
     ui->currentTimeLabel->setText(currentTime.toString(format));
     ui->totalTimeLabel->setText(totalTime.toString(format));
+}
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    switch (event->key()) {
+    case Qt::Key_Space:
+        onPlayPauseClicked();
+        break;
+    case Qt::Key_Right:
+        onSeekForwardClicked();
+        break;
+    case Qt::Key_Left:
+        onSeekBackwardClicked();
+        break;
+    case Qt::Key_Up:
+        ui->volumeSlider->setValue(ui->volumeSlider->value() + 5);
+        break;
+    case Qt::Key_Down:
+        ui->volumeSlider->setValue(ui->volumeSlider->value() - 5);
+        break;
+    case Qt::Key_M:
+        onVolumeClicked();
+        break;
+    case Qt::Key_F:
+        toggleFullScreen();
+        break;
+    default:
+        QMainWindow::keyPressEvent(event);
+    }
+
+}
+void MainWindow::toggleFullScreen()
+{
+    if (ui->isFullScreen) {
+        ui->exitFullScreen();
+        this->show();
+    } else {
+        ui->enterFullScreen();
+        this->hide();
+    }
+}
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->groupBox_Video && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_F) {
+            toggleFullScreen();
+            return true;
+        }
+    }
+    return QMainWindow::eventFilter(watched, event);
 }

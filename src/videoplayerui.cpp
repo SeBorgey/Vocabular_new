@@ -3,9 +3,10 @@
 #include <QHBoxLayout>
 #include <QStyle>
 #include <QMainWindow>
+#include <QDebug>
 
 VideoPlayerUI::VideoPlayerUI(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), isFullScreen(false)
 {
     createWidgets();
     setupLayout();
@@ -14,6 +15,8 @@ VideoPlayerUI::VideoPlayerUI(QWidget *parent)
     }
     updateVideoSize();
     updateFontSizes();
+    setFocusPolicy(Qt::StrongFocus);
+    setFocus();
 }
 
 void VideoPlayerUI::createWidgets()
@@ -90,7 +93,7 @@ void VideoPlayerUI::setupLayout()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
-    QHBoxLayout *videoLayout = new QHBoxLayout();
+    videoLayout = new QHBoxLayout();
 
     videoLayout->addWidget(groupBox_Video);
     mainLayout->addLayout(videoLayout);
@@ -209,4 +212,67 @@ void VideoPlayerUI::updateFontSizes()
     englishSubtitleEdit->setFixedHeight(subtitleHeight);
     russianSubtitleEdit->setFixedHeight(subtitleHeight);
 
+}
+bool VideoPlayerUI::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == groupBox_Video && isFullScreen) {
+        // Передаем все события клавиатуры в MainWindow
+        if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
+            QWidget* mainWindow = window();
+            QCoreApplication::sendEvent(mainWindow, event);
+            return true;
+        }
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
+void VideoPlayerUI::enterFullScreen()
+{
+    if (!isFullScreen) {
+        previousGeometry = groupBox_Video->geometry();
+        originalFlags = groupBox_Video->windowFlags();
+
+        groupBox_Video->setParent(nullptr);
+        groupBox_Video->setWindowFlags(originalFlags | Qt::Window);
+
+        // Получаем размеры экрана
+        QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
+
+        // Устанавливаем размер groupBox_Video на весь экран
+        groupBox_Video->setGeometry(screenGeometry);
+        groupBox_Video->showFullScreen();
+
+        groupBox_Video->installEventFilter(this);  // Устанавливаем фильтр событий
+
+        isFullScreen = true;
+        groupBox_Video->setFocusPolicy(Qt::StrongFocus);
+        groupBox_Video->setFocus();
+        updateVideoSize();
+        updateFontSizes();
+    }
+    qDebug() << groupBox_Video->width() << " " << groupBox_Video->height();
+}
+
+void VideoPlayerUI::exitFullScreen()
+{
+    if (isFullScreen) {
+        groupBox_Video->removeEventFilter(this);  // Удаляем фильтр событий
+
+        groupBox_Video->setWindowFlags(originalFlags);
+        groupBox_Video->setParent(this);
+
+        // Восстанавливаем положение внутри главного окна
+        QPoint globalPos = mapToGlobal(previousGeometry.topLeft());
+        groupBox_Video->move(mapFromGlobal(globalPos));
+        groupBox_Video->resize(previousGeometry.size());
+        videoLayout->addWidget(groupBox_Video);
+        groupBox_Video->show();
+
+        isFullScreen = false;
+
+        // Обновляем размер видео и шрифты
+        updateVideoSize();
+        updateFontSizes();
+    }
+    qDebug()<<groupBox_Video->width()<<" "<<groupBox_Video->height();
 }

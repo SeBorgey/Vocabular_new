@@ -15,7 +15,7 @@
 #include "subtitlemanager.h"
 #include "main_vocabulary.h"
 #include "subtitleextractor.h"
-
+#include <QKeyEvent>
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -27,7 +27,9 @@ public:
 
 protected:
     bool event(QEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 
+    bool eventFilter(QObject *watched, QEvent *event);
 private slots:
     void onOpenFileTriggered();
     void onPlayPauseClicked();
@@ -45,6 +47,7 @@ private slots:
                              SubtitleTrack& russianTrack, SubtitleTrack& englishTrack,
                              int audioTrackIndex);
     void onSetEngAudio();
+    void toggleFullScreen();
 
 private:
     enum{
