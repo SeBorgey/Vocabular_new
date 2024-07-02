@@ -11,29 +11,45 @@
 #include <QFileDialog>
 #include <QLabel>
 #include <QGroupBox>
+#include <QObject>
+#include <QMediaPlayer>
+#include <QAudioOutput>
+#include <QGraphicsVideoItem>
+#include <QMediaMetaData>
+#include <QString>
 #include "subtitleextractor.h"
+
 class SubtitleSelectionDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit SubtitleSelectionDialog(const QString& videoPath, QList<SubtitleTrack>& tracks, QWidget *parent = nullptr);
+    SubtitleSelectionDialog(const QString &videoPath, QList<SubtitleTrack>& subtitleTracks,
+                            const QStringList& audioTracks, QWidget *parent = nullptr);
 
     QString getRussianSubtitlePath() const { return mRussianSubtitlePath; }
     QString getEnglishSubtitlePath() const { return mEnglishSubtitlePath; }
 signals:
-    void subtitlesSelected(const QString& russianPath, const QString& englishPath,
-                           SubtitleTrack& russianTrack, SubtitleTrack& englishTrack);
+    void subtitlesAndAudioSelected(const QString& russianPath, const QString& englishPath,
+                                   SubtitleTrack& russianTrack, SubtitleTrack& englishTrack,
+                                   int audioTrackIndex);
 private slots:
     void onRussianFileSelect();
     void onEnglishFileSelect();
     void onRussianTrackSelect(int row);
     void onEnglishTrackSelect(int row);
     void onAccept();
+    void onAudioTrackSelect(int row);
 
 private:
     void setupUI();
     void loadSubtitleTracks();
+    void loadAudioTracks();
+    QGroupBox *mAudioGroup;
+    QRadioButton *mAudioTrackRadio;
+    QListWidget *mAudioTrackList;
+    QLineEdit *mAudioSelectedTrack;
+    int mSelectedAudioTrackIndex;
 
     QString mVideoPath;
     QString mRussianSubtitlePath;
@@ -41,6 +57,7 @@ private:
     SubtitleTrack mRussianSelectedTrack;
     SubtitleTrack mEnglishSelectedTrack;
     QList<SubtitleTrack> mTracks;
+    QStringList mAudioTracks;
 
     QRadioButton *mRussianFileRadio;
     QRadioButton *mRussianTrackRadio;

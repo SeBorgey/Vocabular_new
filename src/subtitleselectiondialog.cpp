@@ -1,19 +1,33 @@
 #include "subtitleselectiondialog.h"
 
-SubtitleSelectionDialog::SubtitleSelectionDialog(const QString &videoPath, QList<SubtitleTrack>& tracks, QWidget *parent)
-    : QDialog(parent), mVideoPath(videoPath)
+SubtitleSelectionDialog::SubtitleSelectionDialog(const QString &videoPath, QList<SubtitleTrack>& subtitleTracks,
+                                                 const QStringList& audioTracks, QWidget *parent)
+    : QDialog(parent), mVideoPath(videoPath), mSelectedAudioTrackIndex(-1)
 {
-    mTracks = tracks;
-    setWindowTitle("Select Subtitles");
+    mTracks = subtitleTracks;
+    mAudioTracks = audioTracks;
+    setWindowTitle("Select Subtitles and Audio");
     setupUI();
     loadSubtitleTracks();
+    loadAudioTracks();
 }
 
 void SubtitleSelectionDialog::setupUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     QHBoxLayout *languagesLayout = new QHBoxLayout();
+    // Audio tracks
+    mAudioGroup = new QGroupBox("Audio Tracks");
+    QVBoxLayout *audioLayout = new QVBoxLayout(mAudioGroup);
+    mAudioTrackRadio = new QRadioButton("Internal Track");
+    mAudioTrackList = new QListWidget();
+    mAudioSelectedTrack = new QLineEdit();
+    mAudioSelectedTrack->setReadOnly(true);
 
+    audioLayout->addWidget(mAudioTrackRadio);
+    audioLayout->addWidget(mAudioTrackList);
+    audioLayout->addWidget(new QLabel("Selected:"));
+    audioLayout->addWidget(mAudioSelectedTrack);
     // Russian subtitles
     QGroupBox *russianGroup = new QGroupBox("Russian Subtitles");
     QVBoxLayout *russianLayout = new QVBoxLayout(russianGroup);
@@ -48,8 +62,9 @@ void SubtitleSelectionDialog::setupUI()
     englishLayout->addWidget(new QLabel("Selected:"));
     englishLayout->addWidget(mEnglishSelectedSub);
 
-    languagesLayout->addWidget(russianGroup);
+    languagesLayout->addWidget(mAudioGroup);
     languagesLayout->addWidget(englishGroup);
+    languagesLayout->addWidget(russianGroup);
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
     QPushButton *okButton = new QPushButton("OK");
@@ -60,12 +75,28 @@ void SubtitleSelectionDialog::setupUI()
     mainLayout->addLayout(languagesLayout);
     mainLayout->addLayout(buttonsLayout);
 
+    connect(mAudioTrackList, &QListWidget::currentRowChanged, this, &SubtitleSelectionDialog::onAudioTrackSelect);
     connect(mRussianFileButton, &QPushButton::clicked, this, &SubtitleSelectionDialog::onRussianFileSelect);
     connect(mEnglishFileButton, &QPushButton::clicked, this, &SubtitleSelectionDialog::onEnglishFileSelect);
     connect(mRussianTrackList, &QListWidget::currentRowChanged, this, &SubtitleSelectionDialog::onRussianTrackSelect);
     connect(mEnglishTrackList, &QListWidget::currentRowChanged, this, &SubtitleSelectionDialog::onEnglishTrackSelect);
     connect(okButton, &QPushButton::clicked, this, &SubtitleSelectionDialog::onAccept);
     connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+}
+void SubtitleSelectionDialog::loadAudioTracks()
+{
+    for (const QString& track : mAudioTracks) {
+        mAudioTrackList->addItem(track);
+    }
+}
+
+void SubtitleSelectionDialog::onAudioTrackSelect(int row)
+{
+    if (row >= 0) {
+        mSelectedAudioTrackIndex = row;
+        mAudioSelectedTrack->setText(mAudioTrackList->item(row)->text());
+        mAudioTrackRadio->setChecked(true);
+    }
 }
 
 void SubtitleSelectionDialog::onRussianFileSelect()
@@ -137,6 +168,7 @@ void SubtitleSelectionDialog::onAccept()
         mEnglishSubtitlePath.clear();
     }
 
-    emit subtitlesSelected(mRussianSubtitlePath, mEnglishSubtitlePath, russianTrack, englishTrack);
+    emit subtitlesAndAudioSelected(mRussianSubtitlePath, mEnglishSubtitlePath,
+                                   russianTrack, englishTrack, mSelectedAudioTrackIndex);
     accept();
 }

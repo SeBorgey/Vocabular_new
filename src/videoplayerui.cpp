@@ -42,6 +42,7 @@ void VideoPlayerUI::createWidgets()
     fileNameEdit = new QLineEdit(this);
     englishSubsEdit = new QLineEdit(this);
     russianSubsEdit = new QLineEdit(this);
+    audioEdit = new QLineEdit(this);
     seekForwardButton = new QPushButton(this);
     seekBackwardButton = new QPushButton(this);
 
@@ -57,6 +58,7 @@ void VideoPlayerUI::createWidgets()
     fileNameEdit->setPlaceholderText(tr("File name"));
     englishSubsEdit->setPlaceholderText(tr("English subs"));
     russianSubsEdit->setPlaceholderText(tr("Russian subs"));
+    audioEdit->setPlaceholderText("Audiotrack");
 
     englishSubtitleEdit = new MultiSelectLabel(groupBox_Video);
     russianSubtitleEdit = new MultiSelectLabel(groupBox_Video);
@@ -161,6 +163,7 @@ void VideoPlayerUI::createMenuAndToolbar(QMainWindow *mainWindow)
     QToolBar *toolBar = new QToolBar(mainWindow);
     toolBar->addAction(openAction);
     toolBar->addWidget(fileNameEdit);
+    toolBar->addWidget(audioEdit);
     toolBar->addWidget(englishSubsEdit);
     toolBar->addWidget(russianSubsEdit);
 

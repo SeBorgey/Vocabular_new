@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupConnections();
 
     playerController->setVideoOutput(ui->videoItem);
-    resize(924, 658);
     setWindowTitle("Watch");
 }
 
@@ -72,16 +71,27 @@ void MainWindow::onOpenFileTriggered()
     currentFileName = QFileDialog::getOpenFileName(this, tr("Select Video File"));
     if (!currentFileName.isEmpty()) {
         playerController->setSource(currentFileName);
+        connect(playerController, &VideoPlayerController::audioTracksGot, this, &MainWindow::onSetEngAudio);
         ui->fileNameEdit->setText(QFileInfo(currentFileName).fileName());
         ui->englishSubsEdit->clear();
         ui->russianSubsEdit->clear();
-        extractor.setFileName(currentFileName);
-        if (!tryFindSubtitles()) {
-            showSubtitleSelectionDialog();
+        extractor.setFileName(currentFileName);        
+    }
+}
+
+void MainWindow::onSetEngAudio(){
+    QStringList audio = playerController->audioTracks;
+    for (int i=0; i<audio.size(); i++){
+        if (audio[i].toLower().contains("eng")){
+            playerController->setAudioTrack(i);
+            ui->audioEdit->setText(audio[i]);
+            break;
         }
     }
-    ui->videoView->setGeometry(0, 0, ui->groupBox_Video->width(), ui->groupBox_Video->height());
-    ui->videoItem->setSize(ui->groupBox_Video->size());
+    disconnect(playerController, &VideoPlayerController::audioTracksGot, this, &MainWindow::onSetEngAudio);
+    if (!tryFindSubtitles()) {
+        showSubtitleSelectionDialog();
+    }
 }
 
 bool MainWindow::tryFindSubtitles()
@@ -92,6 +102,7 @@ bool MainWindow::tryFindSubtitles()
     parentDir.cdUp();
 
     QDirIterator it(parentDir.path(), QStringList() << "*.srt", QDir::Files, QDirIterator::Subdirectories);
+
     while (it.hasNext()) {
         QString filePath = it.next();
         QFileInfo fileInfo(filePath);
@@ -145,13 +156,15 @@ bool MainWindow::tryFindSubtitles()
 
 void MainWindow::showSubtitleSelectionDialog()
 {
-    SubtitleSelectionDialog dialog(currentFileName, extractor.tracks, this);
-    connect(&dialog, &SubtitleSelectionDialog::subtitlesSelected, this, &MainWindow::onSubtitlesSelected);
+    SubtitleSelectionDialog dialog(currentFileName, extractor.tracks, playerController->audioTracks, this);
+    connect(&dialog, &SubtitleSelectionDialog::subtitlesAndAudioSelected,
+            this, &MainWindow::onSubtitlesAndAudioSelected);
     dialog.exec();
 }
 
-void MainWindow::onSubtitlesSelected(const QString& russianPath, const QString& englishPath,
-                                     SubtitleTrack& russianTrack, SubtitleTrack& englishTrack)
+void MainWindow::onSubtitlesAndAudioSelected(const QString& russianPath, const QString& englishPath,
+                                             SubtitleTrack& russianTrack, SubtitleTrack& englishTrack,
+                                             int audioTrackIndex)
 {
     if (!russianPath.isEmpty()) {
         russianSubsPath = russianPath;
@@ -174,6 +187,9 @@ void MainWindow::onSubtitlesSelected(const QString& russianPath, const QString& 
     }
 
     activateSubs();
+    if (audioTrackIndex >= 0) {
+        playerController->setAudioTrack(audioTrackIndex);
+    }
 }
 void MainWindow::activateSubs()
 {

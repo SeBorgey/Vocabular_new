@@ -49,6 +49,7 @@ public:
     QLineEdit *fileNameEdit;
     QLineEdit *englishSubsEdit;
     QLineEdit *russianSubsEdit;
+    QLineEdit *audioEdit;
     QPushButton *seekForwardButton;
     QPushButton *seekBackwardButton;
     QPushButton *manualSubsButton;

@@ -41,8 +41,10 @@ private slots:
     void onDurationChanged(qint64 duration);
     void onPositionChanged(qint64 position);
     void onDurationSliderValueChanged(int value);
-    void onSubtitlesSelected(const QString& russianPath, const QString& englishPath,
-                             SubtitleTrack& russianTrack, SubtitleTrack& englishTrack);
+    void onSubtitlesAndAudioSelected(const QString& russianPath, const QString& englishPath,
+                             SubtitleTrack& russianTrack, SubtitleTrack& englishTrack,
+                             int audioTrackIndex);
+    void onSetEngAudio();
 
 private:
     enum{
