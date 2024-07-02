@@ -15,6 +15,7 @@
 #include "subtitlemanager.h"
 #include "main_vocabulary.h"
 #include "subtitleextractor.h"
+#include "hovereventfilter.h"
 #include <QKeyEvent>
 class MainWindow : public QMainWindow
 {
@@ -26,10 +27,9 @@ public:
     void setVocabulary(Main_vocabulary* vocab);
 
 protected:
-    bool event(QEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
 
-    bool eventFilter(QObject *watched, QEvent *event);
+    bool event(QEvent *event);
 private slots:
     void onOpenFileTriggered();
     void onPlayPauseClicked();
@@ -49,6 +49,8 @@ private slots:
     void onSetEngAudio();
     void toggleFullScreen();
 
+    void handleHoverEnteredSubtitleButton();
+    void handleHoverLeftSubtitleButton();
 private:
     enum{
         Hover,
@@ -71,6 +73,7 @@ private:
     bool tryFindSubtitles();
     void showSubtitleSelectionDialog();
     void activateSubs();
+    HoverEventFilter *hoverFilter;
 };
 
 #endif // MAINWINDOW_H

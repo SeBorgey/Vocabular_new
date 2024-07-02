@@ -83,6 +83,9 @@ private:
     int originalIndex;
 private:
     QList<QWidget*> originalWidgetOrder;
+    // VideoPlayerUI.h
+signals:
+    void hoverMovedOnSubtitleButton(bool hovered);
 };
 
 #endif // VIDEOPLAYERUI_H

@@ -5,7 +5,7 @@
 #include "subtitleselectiondialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), isPaused(true), isMuted(false)
+    : QMainWindow(parent), isPaused(true), isMuted(false), hoverFilter(new HoverEventFilter(this))
 {
     ui = new VideoPlayerUI(this);
     setCentralWidget(ui);
@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     playerController->setVideoOutput(ui->videoItem);
     setWindowTitle("Watch");
+    hoverFilter->subtitleButton = ui->subtitleButton;
+    ui->subtitleButton->installEventFilter(hoverFilter);
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
 }
@@ -33,24 +35,12 @@ void MainWindow::setVocabulary(Main_vocabulary* vocab)
     mainVocab = vocab;
 }
 
-bool MainWindow::event(QEvent *event)
-{
-    if (event->type() == QEvent::HoverMove)
-    {        
-        QWidget* widget = QApplication::widgetAt(QCursor::pos());
-        if (ui->subtitleButton == widget) {
-            ui->subtitleButton->setText(russianText);
-            cursorSubAt=Hover;
-        } else {
-            ui->subtitleButton->setText(englishText);
-            cursorSubAt=NotHover;
-        }
-    }
-    return QMainWindow::event(event);
-}
-
 void MainWindow::setupConnections()
 {
+    connect(hoverFilter, &HoverEventFilter::hoverEnteredSubtitleButton, this, &MainWindow::handleHoverEnteredSubtitleButton);
+    connect(hoverFilter, &HoverEventFilter::hoverLeftSubtitleButton, this, &MainWindow::handleHoverLeftSubtitleButton);
+
+
     connect(ui, &VideoPlayerUI::fullscreenToggled, this, &MainWindow::toggleFullScreen);
     connect(ui->openAction, &QAction::triggered, this, &MainWindow::onOpenFileTriggered);
     connect(ui->playPauseButton, &QPushButton::clicked, this, &MainWindow::onPlayPauseClicked);
@@ -67,6 +57,18 @@ void MainWindow::setupConnections()
     connect(playerController, &VideoPlayerController::durationChanged, this, &MainWindow::onDurationChanged);
     connect(playerController, &VideoPlayerController::positionChanged, this, &MainWindow::onPositionChanged);
 
+}
+
+void MainWindow::handleHoverEnteredSubtitleButton()
+{
+    ui->subtitleButton->setText(russianText);
+    cursorSubAt = Hover;
+}
+
+void MainWindow::handleHoverLeftSubtitleButton()
+{
+    ui->subtitleButton->setText(englishText);
+    cursorSubAt = NotHover;
 }
 
 void MainWindow::onOpenFileTriggered()
@@ -326,24 +328,45 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     }
 
 }
+
+
+bool MainWindow::event(QEvent *event)
+{
+    if (event->type() == QEvent::HoverMove)
+    {
+        QWidget* widget = QApplication::widgetAt(QCursor::pos());
+        if (ui->subtitleButton == widget) {
+            ui->subtitleButton->setText(russianText);
+            cursorSubAt=Hover;
+        } else {
+            ui->subtitleButton->setText(englishText);
+            cursorSubAt=NotHover;
+        }
+    }
+    else if (event->type() == QEvent::MouseButtonPress){
+        QWidget* widget = QApplication::widgetAt(QCursor::pos());
+        if (ui->subtitleButton == widget){
+            onSubtitleClicked();
+        }
+        else if (ui->addWordButton == widget){
+            onAddWordClicked();
+        }
+    }
+    return QMainWindow::event(event);
+}
+
 void MainWindow::toggleFullScreen()
 {
     if (ui->isFullScreen) {
         ui->exitFullScreen();
+        setFocusPolicy(Qt::StrongFocus);
+        setFocus();
         this->show();
+        ui->subtitleButton->raise();
     } else {
         ui->enterFullScreen();
+        ui->groupBox_Video->setFocusPolicy(Qt::StrongFocus);
+        ui->groupBox_Video->setFocus();
         this->hide();
     }
-}
-bool MainWindow::eventFilter(QObject *watched, QEvent *event)
-{
-    if (watched == ui->groupBox_Video && event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_F) {
-            toggleFullScreen();
-            return true;
-        }
-    }
-    return QMainWindow::eventFilter(watched, event);
 }

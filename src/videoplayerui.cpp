@@ -241,7 +241,6 @@ void VideoPlayerUI::enterFullScreen()
         // Устанавливаем размер groupBox_Video на весь экран
         groupBox_Video->setGeometry(screenGeometry);
         groupBox_Video->showFullScreen();
-
         groupBox_Video->installEventFilter(this);  // Устанавливаем фильтр событий
 
         isFullScreen = true;
@@ -250,7 +249,6 @@ void VideoPlayerUI::enterFullScreen()
         updateVideoSize();
         updateFontSizes();
     }
-    qDebug() << groupBox_Video->width() << " " << groupBox_Video->height();
 }
 
 void VideoPlayerUI::exitFullScreen()
@@ -269,10 +267,10 @@ void VideoPlayerUI::exitFullScreen()
         groupBox_Video->show();
 
         isFullScreen = false;
-
+        setFocusPolicy(Qt::StrongFocus);
+        setFocus();
         // Обновляем размер видео и шрифты
         updateVideoSize();
         updateFontSizes();
     }
-    qDebug()<<groupBox_Video->width()<<" "<<groupBox_Video->height();
 }

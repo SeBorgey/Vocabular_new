@@ -49,6 +49,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/videoplayerui.h src/videoplayerui.cpp
         src/videoplayercontroller.h src/videoplayercontroller.cpp
         src/subtitlemanager.h src/subtitlemanager.cpp
+        src/hovereventfilter.h src/hovereventfilter.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Vocabular APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
