@@ -35,12 +35,14 @@ void MainWindow::setVocabulary(Main_vocabulary* vocab)
 bool MainWindow::event(QEvent *event)
 {
     if (event->type() == QEvent::HoverMove)
-    {
+    {        
         QWidget* widget = QApplication::widgetAt(QCursor::pos());
         if (ui->subtitleButton == widget) {
-            ui->subtitleButton->setText(subtitleManager->getRussianSubtitle(playerController->position()));
+            ui->subtitleButton->setText(russianText);
+            cursorSubAt=Hover;
         } else {
-            ui->subtitleButton->setText(subtitleManager->getEnglishSubtitle(playerController->position()));
+            ui->subtitleButton->setText(englishText);
+            cursorSubAt=NotHover;
         }
     }
     return QMainWindow::event(event);
@@ -78,8 +80,6 @@ void MainWindow::onOpenFileTriggered()
             showSubtitleSelectionDialog();
         }
     }
-
-    // ui->videoView->setSize(ui->groupBox_Video->size());
     ui->videoView->setGeometry(0, 0, ui->groupBox_Video->width(), ui->groupBox_Video->height());
     ui->videoItem->setSize(ui->groupBox_Video->size());
 }
@@ -228,8 +228,8 @@ void MainWindow::onSubtitleClicked()
     ui->addWordButton->setVisible(true);
     ui->englishSubtitleEdit->setVisible(true);
     ui->russianSubtitleEdit->setVisible(true);
-    ui->englishSubtitleEdit->setText(subtitleManager->getEnglishSubtitle(playerController->position()));
-    ui->russianSubtitleEdit->setText(subtitleManager->getRussianSubtitle(playerController->position()));
+    ui->englishSubtitleEdit->setText(englishText);
+    ui->russianSubtitleEdit->setText(russianText);
 }
 
 void MainWindow::onAddWordClicked()
@@ -256,6 +256,12 @@ void MainWindow::onPositionChanged(qint64 position)
         ui->durationSlider->setValue(position / 1000);
     }
     updateDurationDisplay(position);
+    englishText = subtitleManager->getEnglishSubtitle(playerController->position());
+    russianText = subtitleManager->getRussianSubtitle(playerController->position());
+    if (cursorSubAt==NotHover)
+        ui->subtitleButton->setText(englishText);
+    else if (cursorSubAt == Hover)
+        ui->subtitleButton->setText(russianText);
 }
 
 void MainWindow::onDurationSliderValueChanged(int value)

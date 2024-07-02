@@ -45,6 +45,10 @@ private slots:
                              SubtitleTrack& russianTrack, SubtitleTrack& englishTrack);
 
 private:
+    enum{
+        Hover,
+        NotHover
+    } cursorSubAt = NotHover;
     VideoPlayerUI *ui;
     VideoPlayerController *playerController;
     SubtitleManager *subtitleManager;
@@ -55,7 +59,8 @@ private:
     QString russianSubsPath;
     bool isPaused;
     bool isMuted;
-
+    QString russianText;
+    QString englishText;
     void setupConnections();
     void updateDurationDisplay(qint64 duration);
     bool tryFindSubtitles();

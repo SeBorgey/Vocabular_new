@@ -62,7 +62,6 @@ void VideoPlayerUI::createWidgets()
     russianSubtitleEdit = new MultiSelectLabel(groupBox_Video);
 
     subtitleButton = new QPushButton(groupBox_Video);
-    subtitleButton->setText(tr("Subtitle"));
     QFont font;
     font.setBold(true);
     subtitleButton->setFont(font);
