@@ -36,6 +36,7 @@ void MainMenu::on_pushButtonLearn_clicked()
         learnui = new LearnUI();
         learnui->set_vocab(main_vocab);
     }
+    learnui->run_ui();
     learnui->show();
 
 }
