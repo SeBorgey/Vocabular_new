@@ -33,6 +33,9 @@ void Main_vocabulary::get_all_words()
 
 void Main_vocabulary::add_word(QString russian, QString english)
 {
+    if (russian == "" || english == ""){
+        return;
+    }
     if (english_words.contains(english)){
         if(english_words[english]->russian == russian){
             return;

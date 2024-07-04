@@ -2,7 +2,7 @@
 #define MAINMENU_H
 
 #include <QGroupBox>
-#include "videoplayer.h"
+#include "mainwindow.h"
 #include "learnui.h"
 #include "main_vocabulary.h"
 namespace Ui {
@@ -23,7 +23,7 @@ private slots:
     void on_pushButtonLearn_clicked();
 
 private:
-    VideoPlayer *mainwindow;
+    MainWindow *mainWindow;
     LearnUI *learnui;
     Ui::MainMenu *ui;
     Main_vocabulary *main_vocab;

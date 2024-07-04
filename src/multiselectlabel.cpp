@@ -13,7 +13,7 @@ MultiSelectLabel::MultiSelectLabel(QWidget* parent) : QLabel(parent) {
     shadow->setOffset(0, 0);
     shadow->setColor(Qt::black);
     setGraphicsEffect(shadow);
-    setStyleSheet("font-size: 20pt; color: white;");
+    setStyleSheet("color: white;");
 }
 
 void MultiSelectLabel::mousePressEvent(QMouseEvent* event) {

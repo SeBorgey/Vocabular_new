@@ -19,9 +19,6 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui Widgets Multimed
 
 set(PROJECT_SOURCES
         src/main.cpp
-        src/videoplayer.cpp
-        src/videoplayer.h
-        src/mainwindow.ui
         src/srtparser.h
 )
 
@@ -46,6 +43,16 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
         src/multiselectlabel.h
         src/multiselectlabel.cpp
+        src/subtitleextractor.h src/subtitleextractor.cpp
+        src/subtitleselectiondialog.h src/subtitleselectiondialog.cpp
+        src/mainwindow.h src/mainwindow.cpp
+        src/videoplayerui.h src/videoplayerui.cpp
+        src/videoplayercontroller.h src/videoplayercontroller.cpp
+        src/subtitlemanager.h src/subtitlemanager.cpp
+        src/hovereventfilter.h src/hovereventfilter.cpp
+        src/multiselecttextedit.h src/multiselecttextedit.cpp
+        src/customlabel.h src/customlabel.cpp
+        src/utilities.h
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Vocabular APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

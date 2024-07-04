@@ -5,28 +5,37 @@
 MainMenu::MainMenu(QWidget *parent)
     : QGroupBox(parent)
     , ui(new Ui::MainMenu)
-    , mainwindow(new VideoPlayer)
-    , learnui(new LearnUI)
-    , main_vocab(new Main_vocabulary)
 {
     ui->setupUi(this);
-    learnui->set_vocab(main_vocab);
-    mainwindow->set_vocab(main_vocab);
+    main_vocab = new Main_vocabulary();
+    mainWindow = nullptr;
+    learnui = nullptr;
 }
 
 MainMenu::~MainMenu()
 {
     delete ui;
+    delete main_vocab;
+    delete mainWindow;
+    delete learnui;
 }
 
 void MainMenu::on_pushButtonWatch_clicked()
 {
-    mainwindow->show();
+    if (!mainWindow) {
+        mainWindow = new MainWindow();
+        mainWindow->setVocabulary(main_vocab);
+    }
+    mainWindow->showMaximized();
 }
 
 
 void MainMenu::on_pushButtonLearn_clicked()
 {
+    if (!learnui) {
+        learnui = new LearnUI();
+        learnui->set_vocab(main_vocab);
+    }
     learnui->run_ui();
     learnui->show();
 
