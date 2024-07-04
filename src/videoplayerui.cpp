@@ -63,10 +63,10 @@ void VideoPlayerUI::createWidgets()
     russianSubsEdit->setPlaceholderText(tr("Russian subs"));
     audioEdit->setPlaceholderText("Audiotrack");
 
-    englishSubtitleEdit = new MultiSelectLabel(groupBox_Video);
-    russianSubtitleEdit = new MultiSelectLabel(groupBox_Video);
+    englishSubtitleEdit = new MultiSelectTextEdit(groupBox_Video);
+    russianSubtitleEdit = new MultiSelectTextEdit(groupBox_Video);
 
-    subtitleButton = new QPushButton(groupBox_Video);
+    subtitleButton = new CustomLabel(groupBox_Video);
     QFont font;
     font.setBold(true);
     subtitleButton->setFont(font);
@@ -212,6 +212,10 @@ void VideoPlayerUI::updateFontSizes()
     englishSubtitleEdit->setFixedHeight(subtitleHeight);
     russianSubtitleEdit->setFixedHeight(subtitleHeight);
 
+    int subtitleWidth = windowWidth*0.9;
+    englishSubtitleEdit->setFixedWidth(subtitleWidth);
+    russianSubtitleEdit->setFixedWidth(subtitleWidth);
+    subtitleButton->setFixedWidth(subtitleWidth);
 }
 bool VideoPlayerUI::eventFilter(QObject *watched, QEvent *event)
 {

@@ -17,6 +17,7 @@
 #include "subtitleextractor.h"
 #include "hovereventfilter.h"
 #include <QKeyEvent>
+#include "customlabel.h"
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

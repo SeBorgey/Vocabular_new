@@ -17,8 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     playerController->setVideoOutput(ui->videoItem);
     setWindowTitle("Watch");
-    hoverFilter->subtitleButton = ui->subtitleButton;
-    ui->subtitleButton->installEventFilter(hoverFilter);
+    // hoverFilter->subtitleButton = ui->subtitleButton;
+    // ui->subtitleButton->installEventFilter(hoverFilter);
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
 }
@@ -37,9 +37,18 @@ void MainWindow::setVocabulary(Main_vocabulary* vocab)
 
 void MainWindow::setupConnections()
 {
-    connect(hoverFilter, &HoverEventFilter::hoverEnteredSubtitleButton, this, &MainWindow::handleHoverEnteredSubtitleButton);
-    connect(hoverFilter, &HoverEventFilter::hoverLeftSubtitleButton, this, &MainWindow::handleHoverLeftSubtitleButton);
+    // connect(hoverFilter, &HoverEventFilter::hoverEnteredSubtitleButton, this, &MainWindow::handleHoverEnteredSubtitleButton);
+    // connect(hoverFilter, &HoverEventFilter::hoverLeftSubtitleButton, this, &MainWindow::handleHoverLeftSubtitleButton);
 
+    connect(ui->subtitleButton, &CustomLabel::clicked, this, &MainWindow::onSubtitleClicked);
+    connect(ui->subtitleButton, &CustomLabel::hoverEntered, this, [this]() {
+        ui->subtitleButton->setText(russianText);
+        cursorSubAt = Hover;
+    });
+    connect(ui->subtitleButton, &CustomLabel::hoverLeft, this, [this]() {
+        ui->subtitleButton->setText(englishText);
+        cursorSubAt = NotHover;
+    });
 
     connect(ui, &VideoPlayerUI::fullscreenToggled, this, &MainWindow::toggleFullScreen);
     connect(ui->openAction, &QAction::triggered, this, &MainWindow::onOpenFileTriggered);
@@ -49,7 +58,7 @@ void MainWindow::setupConnections()
     connect(ui->volumeSlider, &QSlider::valueChanged, this, &MainWindow::onVolumeChanged);
     connect(ui->seekForwardButton, &QPushButton::clicked, this, &MainWindow::onSeekForwardClicked);
     connect(ui->seekBackwardButton, &QPushButton::clicked, this, &MainWindow::onSeekBackwardClicked);
-    connect(ui->subtitleButton, &QPushButton::clicked, this, &MainWindow::onSubtitleClicked);
+    // connect(ui->subtitleButton, &QPushButton::clicked, this, &MainWindow::onSubtitleClicked);
     connect(ui->addWordButton, &QPushButton::clicked, this, &MainWindow::onAddWordClicked);
     connect(ui->durationSlider, &QSlider::valueChanged, this, &MainWindow::onDurationSliderValueChanged);
     connect(ui->manualSubsButton, &QPushButton::clicked, this, &MainWindow::showSubtitleSelectionDialog);
@@ -258,8 +267,8 @@ void MainWindow::onAddWordClicked()
     ui->addWordButton->setVisible(false);
     ui->englishSubtitleEdit->setVisible(false);
     ui->russianSubtitleEdit->setVisible(false);
-    QString englishWord = ui->englishSubtitleEdit->selectedText();
-    QString russianWord = ui->russianSubtitleEdit->selectedText();
+    QString englishWord = ui->englishSubtitleEdit->getSelectedText();
+    QString russianWord = ui->russianSubtitleEdit->getSelectedText();
     if (mainVocab) {
         mainVocab->add_word(russianWord, englishWord);
     }

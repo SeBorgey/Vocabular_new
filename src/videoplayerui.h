@@ -24,6 +24,8 @@
 #include "multiselectlabel.h"
 #include "subtitleextractor.h"
 #include "subtitleselectiondialog.h"
+#include "multiselecttextedit.h"
+#include "customlabel.h"
 
 class VideoPlayerUI : public QWidget
 {
@@ -42,10 +44,10 @@ public:
     QLabel *totalTimeLabel;
     QGraphicsView *videoView;
     QGraphicsVideoItem *videoItem;
-    QPushButton *subtitleButton;
+    CustomLabel *subtitleButton;
     QPushButton *addWordButton;
-    MultiSelectLabel *englishSubtitleEdit;
-    MultiSelectLabel *russianSubtitleEdit;
+    MultiSelectTextEdit *englishSubtitleEdit;
+    MultiSelectTextEdit *russianSubtitleEdit;
     QLineEdit *fileNameEdit;
     QLineEdit *englishSubsEdit;
     QLineEdit *russianSubsEdit;
