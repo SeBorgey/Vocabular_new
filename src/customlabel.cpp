@@ -1,4 +1,5 @@
 #include "customlabel.h"
+#include <QCoreApplication>
 
 CustomLabel::CustomLabel(QWidget *parent)
     : QLabel(parent), hovered(false)
@@ -29,4 +30,9 @@ void CustomLabel::mousePressEvent(QMouseEvent *event)
         emit clicked();
     }
     QLabel::mousePressEvent(event);
+}
+void CustomLabel::forceEnterEvent()
+{
+    QEnterEvent *event = new QEnterEvent(QPointF(0, 0), QPointF(0, 0), QPointF(0, 0));
+    QCoreApplication::sendEvent(this, event);
 }

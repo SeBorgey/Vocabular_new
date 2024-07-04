@@ -186,11 +186,17 @@ void VideoPlayerUI::updateVideoSize()
 
     videoView->update();
 }
+//todo: это костыль, который немного баг с возвращением из полноэкранного режима
+//но чтобы его полностью исправить, надо подумать
 void VideoPlayerUI::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
     updateVideoSize();
     updateFontSizes();
+
+    subtitleButton->forceEnterEvent();
+    subtitleButton->setFocus();
+    subtitleButton->update();
 }
 
 void VideoPlayerUI::updateFontSizes()
@@ -258,6 +264,8 @@ void VideoPlayerUI::enterFullScreen()
 void VideoPlayerUI::exitFullScreen()
 {
     if (isFullScreen) {
+        // resize(geometry().width()-1, geometry().height());
+
         groupBox_Video->removeEventFilter(this);  // Удаляем фильтр событий
 
         groupBox_Video->setWindowFlags(originalFlags);
@@ -271,10 +279,27 @@ void VideoPlayerUI::exitFullScreen()
         groupBox_Video->show();
 
         isFullScreen = false;
+
         setFocusPolicy(Qt::StrongFocus);
         setFocus();
         // Обновляем размер видео и шрифты
+
+        // resize(geometry().width(), geometry().height()-1);
+        // resize(geometry().width()-1, geometry().height());
+        // resize(geometry().width()+1, geometry().height()+1);
+        // showMinimized();
+        // Задать положение (x, y) и размер (ширина, высота)
+        // setGeometry(0, 0, 2000, 2000);
+
+
         updateVideoSize();
         updateFontSizes();
+        // setWindowState(Qt::WindowNoState);
+        resize(geometry().width()-1, geometry().height());
+        // setWindowState(windowState() & ~Qt::WindowMaximized);
+        // QSize oldSize(this->size());
+        // QSize newSize(1120,800);
+        // QResizeEvent *myResizeEvent = new QResizeEvent(oldSize, newSize);
+        // QWidget::resizeEvent(myResizeEvent);
     }
 }

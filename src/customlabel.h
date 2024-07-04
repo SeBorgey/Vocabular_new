@@ -11,6 +11,7 @@ class CustomLabel : public QLabel
 public:
     explicit CustomLabel(QWidget *parent = nullptr);
 
+    void forceEnterEvent();
 signals:
     void clicked();
     void hoverEntered();
