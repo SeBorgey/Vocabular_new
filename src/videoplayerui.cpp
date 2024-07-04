@@ -226,7 +226,6 @@ void VideoPlayerUI::updateFontSizes()
 bool VideoPlayerUI::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == groupBox_Video && isFullScreen) {
-        // Передаем все события клавиатуры в MainWindow
         if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
             QWidget* mainWindow = window();
             QCoreApplication::sendEvent(mainWindow, event);
@@ -245,14 +244,11 @@ void VideoPlayerUI::enterFullScreen()
         groupBox_Video->setParent(nullptr);
         groupBox_Video->setWindowFlags(originalFlags | Qt::Window);
 
-        // Получаем размеры экрана
         QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
 
-        // Устанавливаем размер groupBox_Video на весь экран
         groupBox_Video->setGeometry(screenGeometry);
         groupBox_Video->showFullScreen();
-        groupBox_Video->installEventFilter(this);  // Устанавливаем фильтр событий
-
+        groupBox_Video->installEventFilter(this);
         isFullScreen = true;
         groupBox_Video->setFocusPolicy(Qt::StrongFocus);
         groupBox_Video->setFocus();
@@ -264,42 +260,20 @@ void VideoPlayerUI::enterFullScreen()
 void VideoPlayerUI::exitFullScreen()
 {
     if (isFullScreen) {
-        // resize(geometry().width()-1, geometry().height());
-
-        groupBox_Video->removeEventFilter(this);  // Удаляем фильтр событий
-
+        resize(geometry().width()-1, geometry().height());
+        groupBox_Video->removeEventFilter(this);
         groupBox_Video->setWindowFlags(originalFlags);
         groupBox_Video->setParent(this);
 
-        // Восстанавливаем положение внутри главного окна
         QPoint globalPos = mapToGlobal(previousGeometry.topLeft());
         groupBox_Video->move(mapFromGlobal(globalPos));
         groupBox_Video->resize(previousGeometry.size());
         videoLayout->addWidget(groupBox_Video);
         groupBox_Video->show();
-
         isFullScreen = false;
-
         setFocusPolicy(Qt::StrongFocus);
         setFocus();
-        // Обновляем размер видео и шрифты
-
-        // resize(geometry().width(), geometry().height()-1);
-        // resize(geometry().width()-1, geometry().height());
-        // resize(geometry().width()+1, geometry().height()+1);
-        // showMinimized();
-        // Задать положение (x, y) и размер (ширина, высота)
-        // setGeometry(0, 0, 2000, 2000);
-
-
-        updateVideoSize();
-        updateFontSizes();
-        // setWindowState(Qt::WindowNoState);
-        resize(geometry().width()-1, geometry().height());
-        // setWindowState(windowState() & ~Qt::WindowMaximized);
-        // QSize oldSize(this->size());
-        // QSize newSize(1120,800);
-        // QResizeEvent *myResizeEvent = new QResizeEvent(oldSize, newSize);
-        // QWidget::resizeEvent(myResizeEvent);
+           updateVideoSize();
+        updateFontSizes();        
     }
 }

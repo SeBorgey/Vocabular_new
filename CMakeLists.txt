@@ -52,6 +52,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/hovereventfilter.h src/hovereventfilter.cpp
         src/multiselecttextedit.h src/multiselecttextedit.cpp
         src/customlabel.h src/customlabel.cpp
+        src/utilities.h
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Vocabular APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
