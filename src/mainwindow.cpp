@@ -17,8 +17,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     playerController->setVideoOutput(ui->videoItem);
     setWindowTitle("Watch");
-    // hoverFilter->subtitleButton = ui->subtitleButton;
-    // ui->subtitleButton->installEventFilter(hoverFilter);
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
 }
@@ -37,9 +35,6 @@ void MainWindow::setVocabulary(Main_vocabulary* vocab)
 
 void MainWindow::setupConnections()
 {
-    // connect(hoverFilter, &HoverEventFilter::hoverEnteredSubtitleButton, this, &MainWindow::handleHoverEnteredSubtitleButton);
-    // connect(hoverFilter, &HoverEventFilter::hoverLeftSubtitleButton, this, &MainWindow::handleHoverLeftSubtitleButton);
-
     connect(ui->subtitleButton, &CustomLabel::clicked, this, &MainWindow::onSubtitleClicked);
     connect(ui->subtitleButton, &CustomLabel::hoverEntered, this, [this]() {
         ui->subtitleButton->setText(russianText);
@@ -58,7 +53,6 @@ void MainWindow::setupConnections()
     connect(ui->volumeSlider, &QSlider::valueChanged, this, &MainWindow::onVolumeChanged);
     connect(ui->seekForwardButton, &QPushButton::clicked, this, &MainWindow::onSeekForwardClicked);
     connect(ui->seekBackwardButton, &QPushButton::clicked, this, &MainWindow::onSeekBackwardClicked);
-    // connect(ui->subtitleButton, &QPushButton::clicked, this, &MainWindow::onSubtitleClicked);
     connect(ui->addWordButton, &QPushButton::clicked, this, &MainWindow::onAddWordClicked);
     connect(ui->durationSlider, &QSlider::valueChanged, this, &MainWindow::onDurationSliderValueChanged);
     connect(ui->manualSubsButton, &QPushButton::clicked, this, &MainWindow::showSubtitleSelectionDialog);
