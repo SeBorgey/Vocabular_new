@@ -276,9 +276,8 @@ void MainWindow::onDurationChanged(qint64 duration)
 
 void MainWindow::onPositionChanged(qint64 position)
 {
-    if (!ui->durationSlider->isSliderDown()) {
-        ui->durationSlider->setValue(position / 1000);
-    }
+        // ui->durationSlider->setValue(position / 1000);
+    //todo: Убрал обновление слайдера из-за подвисаний. Многопоточка не помогает
     updateDurationDisplay(position);
     englishText = subtitleManager->getEnglishSubtitle(playerController->position());
     russianText = subtitleManager->getRussianSubtitle(playerController->position());
