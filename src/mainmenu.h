@@ -21,6 +21,8 @@ private slots:
     void on_pushButtonWatch_clicked();
     void on_pushButtonLearn_clicked();
     void on_pushButtonEdit_clicked();
+    void on_pushButtonImport_clicked();
+    void on_pushButtonExport_clicked();
 
 private:
     MainWindow *mainWindow;
@@ -31,6 +33,8 @@ private:
     QPushButton *pushButtonWatch;
     QPushButton *pushButtonLearn;
     QPushButton *pushButtonEdit;
+    QPushButton *pushButtonImport;
+    QPushButton *pushButtonExport;
     QVBoxLayout *mainLayout;
 
     void setupUi();

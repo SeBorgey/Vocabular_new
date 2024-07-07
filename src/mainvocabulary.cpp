@@ -110,3 +110,36 @@ void MainVocabulary::updateWord(int index, const QString& english, const QString
 
     saveWords();
 }
+void MainVocabulary::importWord(const QString& english, const QString& russian, int times, const QDateTime& lastLearning)
+{
+    if (english.isEmpty() || russian.isEmpty()) {
+        return;
+    }
+
+    if (englishWords.contains(english)) {
+        Word* existingWord = englishWords[english];
+        if (existingWord->russian != russian) {
+            existingWord->russian += ", " + russian;
+            russianWords.erase(existingWord->russian);
+            russianWords[existingWord->russian] = existingWord;
+        }
+        existingWord->learningTimes = times;
+        existingWord->lastLearning = lastLearning;
+    }
+    else if (russianWords.contains(russian)) {
+        Word* existingWord = russianWords[russian];
+        if (existingWord->english != english) {
+            existingWord->english += ", " + english;
+            englishWords.erase(existingWord->english);
+            englishWords[existingWord->english] = existingWord;
+        }
+        existingWord->learningTimes = times;
+        existingWord->lastLearning = lastLearning;
+    }
+    else {
+        Word* word = new Word(english, russian, times, lastLearning);
+        words.push_back(word);
+        englishWords[english] = word;
+        russianWords[russian] = word;
+    }
+}
