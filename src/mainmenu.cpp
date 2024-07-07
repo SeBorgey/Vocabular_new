@@ -6,7 +6,7 @@ MainMenu::MainMenu(QWidget *parent)
     : QGroupBox(parent)
 {
     setupUi();
-    main_vocab = new Main_vocabulary();
+    mainVocab = new MainVocabulary();
     mainWindow = nullptr;
     learnui = nullptr;
 
@@ -47,7 +47,7 @@ void MainMenu::centerWindow()
 
 MainMenu::~MainMenu()
 {
-    delete main_vocab;
+    delete mainVocab;
     delete mainWindow;
     delete learnui;
 }
@@ -56,7 +56,7 @@ void MainMenu::on_pushButtonWatch_clicked()
 {
     if (!mainWindow) {
         mainWindow = new MainWindow();
-        mainWindow->setVocabulary(main_vocab);
+        mainWindow->setVocabulary(mainVocab);
     }
     mainWindow->showMaximized();
 }
@@ -65,7 +65,7 @@ void MainMenu::on_pushButtonLearn_clicked()
 {
     if (!learnui) {
         learnui = new LearnUI();
-        learnui->set_vocab(main_vocab);
+        learnui->set_vocab(mainVocab);
     }
     learnui->run_ui();
     learnui->show();

@@ -49,15 +49,15 @@ void LearnUI::setupUi()
     connect(pushButtonWord, &QPushButton::clicked, this, &LearnUI::on_pushButtonWord_clicked);
 }
 
-void LearnUI::set_vocab(Main_vocabulary * vocab)
+void LearnUI::set_vocab(MainVocabulary * vocab)
 {
-    main_vocab = vocab;
+    mainVocab = vocab;
 }
 
 void LearnUI::run_ui(){
-    current_learning = new Current_learning(main_vocab);
-    current_learning->choose_words_for_learning();
-    current = current_learning->get_current_word();
+    currentLearning = new CurrentLearning(mainVocab);
+    currentLearning->chooseWordsForLearning();
+    current = currentLearning->getCurrentWord();
     pushButtonWord->setText(current.first);
     pushButtonAccept->setEnabled(false);
     pushButtonDecline->setEnabled(false);
@@ -71,8 +71,8 @@ void LearnUI::on_pushButtonDecline_clicked()
 {
     pushButtonAccept->setEnabled(false);
     pushButtonDecline->setEnabled(false);
-    current_learning->next();
-    current = current_learning->get_current_word();
+    currentLearning->next();
+    current = currentLearning->getCurrentWord();
     pushButtonWord->setText(current.first);
     pushButtonWord->setEnabled(true);
 }
@@ -81,8 +81,8 @@ void LearnUI::on_pushButtonAccept_clicked()
 {
     pushButtonAccept->setEnabled(false);
     pushButtonDecline->setEnabled(false);
-    current_learning->accept();
-    current = current_learning->get_current_word();
+    currentLearning->accept();
+    current = currentLearning->getCurrentWord();
     pushButtonWord->setText(current.first);
     pushButtonWord->setEnabled(true);
 }

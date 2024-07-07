@@ -5,8 +5,8 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include "main_vocabulary.h"
-#include "current_learning.h"
+#include "mainvocabulary.h"
+#include "currentlearning.h"
 
 class LearnUI : public QGroupBox
 {
@@ -14,7 +14,7 @@ class LearnUI : public QGroupBox
 
 public:
     explicit LearnUI(QWidget *parent = nullptr);
-    void set_vocab(Main_vocabulary* vocab);
+    void set_vocab(MainVocabulary* vocab);
     ~LearnUI();
 
     void run_ui();
@@ -25,8 +25,8 @@ private slots:
     void on_pushButtonWord_clicked();
 
 private:
-    Main_vocabulary *main_vocab;
-    Current_learning *current_learning;
+    MainVocabulary *mainVocab;
+    CurrentLearning *currentLearning;
     std::pair<QString,QString> current;
 
     QPushButton *pushButtonWord;

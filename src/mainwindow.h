@@ -13,7 +13,7 @@
 #include "videoplayerui.h"
 #include "videoplayercontroller.h"
 #include "subtitlemanager.h"
-#include "main_vocabulary.h"
+#include "mainvocabulary.h"
 #include "subtitleextractor.h"
 #include "hovereventfilter.h"
 #include <QKeyEvent>
@@ -25,7 +25,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void setVocabulary(Main_vocabulary* vocab);
+    void setVocabulary(MainVocabulary* vocab);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -60,7 +60,7 @@ private:
     VideoPlayerUI *ui;
     VideoPlayerController *playerController;
     SubtitleManager *subtitleManager;
-    Main_vocabulary *mainVocab;
+    MainVocabulary *mainVocab;
     SubtitleExtractor extractor;
     QString currentFileName;
     QString englishSubsPath;

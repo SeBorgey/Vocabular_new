@@ -5,8 +5,8 @@
 
 MultiSelectLabel::MultiSelectLabel(QWidget* parent) : QLabel(parent) {
     setMouseTracking(true);
-    selection_start = 0;
-    selection_end = 0;
+    selectionStart = 0;
+    selectionEnd = 0;
     setTextFormat(Qt::RichText);
     auto shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(20);
@@ -18,15 +18,15 @@ MultiSelectLabel::MultiSelectLabel(QWidget* parent) : QLabel(parent) {
 
 void MultiSelectLabel::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
-        selection_start = cursorPositionAt(event->pos());
-        selection_end = selection_start;
+        selectionStart = cursorPositionAt(event->pos());
+        selectionEnd = selectionStart;
     }
     QLabel::mousePressEvent(event);
 }
 
 void MultiSelectLabel::mouseMoveEvent(QMouseEvent* event) {
     if (event->buttons() & Qt::LeftButton) {
-        selection_end = cursorPositionAt(event->pos());
+        selectionEnd = cursorPositionAt(event->pos());
         updateSelection();
     }
     QLabel::mouseMoveEvent(event);
@@ -54,5 +54,5 @@ int MultiSelectLabel::cursorPositionAt(const QPoint& pos) {
 
 void MultiSelectLabel::updateSelection() {
     update();
-    setSelection(std::min(selection_start, selection_end), std::abs(selection_end - selection_start));
+    setSelection(std::min(selectionStart, selectionEnd), std::abs(selectionEnd - selectionStart));
 }

@@ -28,7 +28,7 @@ MainWindow::~MainWindow()
     delete subtitleManager;
 }
 
-void MainWindow::setVocabulary(Main_vocabulary* vocab)
+void MainWindow::setVocabulary(MainVocabulary* vocab)
 {
     mainVocab = vocab;
 }
@@ -264,7 +264,7 @@ void MainWindow::onAddWordClicked()
     QString englishWord = ui->englishSubtitleEdit->getSelectedText();
     QString russianWord = ui->russianSubtitleEdit->getSelectedText();
     if (mainVocab) {
-        mainVocab->add_word(russianWord, englishWord);
+        mainVocab->addWord(russianWord, englishWord);
     }
 }
 

@@ -6,7 +6,7 @@
 #include <QVBoxLayout>
 #include "mainwindow.h"
 #include "learnui.h"
-#include "main_vocabulary.h"
+#include "mainvocabulary.h"
 
 class MainMenu : public QGroupBox
 {
@@ -23,7 +23,7 @@ private slots:
 private:
     MainWindow *mainWindow;
     LearnUI *learnui;
-    Main_vocabulary *main_vocab;
+    MainVocabulary *mainVocab;
 
     QPushButton *pushButtonWatch;
     QPushButton *pushButtonLearn;
