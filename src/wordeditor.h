@@ -29,6 +29,7 @@ private slots:
 private slots:
     void onAddWord();
     void onDeleteWord();
+    void updateColumnWidths();
 };
 
 #endif // WORDEDITOR_H

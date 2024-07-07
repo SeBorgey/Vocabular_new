@@ -25,11 +25,11 @@ void WordEditor::setupUi()
     proxyModel->setSourceModel(model);
     tableView->setModel(proxyModel);
 
-    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    tableView->setWordWrap(true);
+    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    connect(tableView->horizontalHeader(), &QHeaderView::sectionResized,
+            this, &WordEditor::updateColumnWidths);
 
-    connect(model, &QStandardItemModel::dataChanged, this, &WordEditor::onCellChanged);
+    connect(proxyModel, &QSortFilterProxyModel::dataChanged, this, &WordEditor::onCellChanged);
     connect(tableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &WordEditor::onHeaderClicked);
 
     QPushButton *addButton = new QPushButton("Add Word", this);
@@ -44,7 +44,16 @@ void WordEditor::setupUi()
     connect(addButton, &QPushButton::clicked, this, &WordEditor::onAddWord);
     connect(deleteButton, &QPushButton::clicked, this, &WordEditor::onDeleteWord);
 }
+void WordEditor::updateColumnWidths()
+{
+    const int totalWidth = 100;
+    QList<int> columnWidths = {30, 30, 20, 20};
 
+    for (int i = 0; i < columnWidths.size(); ++i) {
+        int width = (columnWidths[i] * tableView->viewport()->width()) / totalWidth;
+        tableView->horizontalHeader()->resizeSection(i, width);
+    }
+}
 void WordEditor::populateTable()
 {
     model->clear();
@@ -62,9 +71,15 @@ void WordEditor::populateTable()
 
 void WordEditor::onCellChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
 {
-    int row = proxyModel->mapToSource(topLeft).row();
-    int column = topLeft.column();
-    QString newValue = model->data(proxyModel->mapToSource(topLeft)).toString();
+    QModelIndex sourceIndex = proxyModel->mapToSource(topLeft);
+    if (!sourceIndex.isValid()) {
+        qDebug() << "Invalid source index";
+        return;
+    }
+
+    int row = sourceIndex.row();
+    int column = sourceIndex.column();
+    QString newValue = model->data(sourceIndex).toString();
 
     Word* word = vocabulary->words[row];
 

@@ -34,7 +34,7 @@ void MainVocabulary::getAllWords()
 void MainVocabulary::addWord(QString russian, QString english)
 {
     if (englishWords.contains(english)){
-        if(englishWords[english]->russian == russian){
+        if(englishWords[english]->russian.contains(russian)){
             return;
         }else{
             englishWords[english]->russian+=", "+russian;
@@ -44,12 +44,12 @@ void MainVocabulary::addWord(QString russian, QString english)
             return;
         }
     }
-    if (englishWords.contains(russian)){
-        if(englishWords[russian]->english == english){
+    if (russianWords.contains(russian)){
+        if(russianWords[russian]->english.contains(english)){
             return;
         }else{
-            englishWords[russian]->english+=", "+english;
-            englishWords[russian]->lastLearning=QDateTime::fromString("97", "yy");
+            russianWords[russian]->english+=", "+english;
+            russianWords[russian]->lastLearning=QDateTime::fromString("97", "yy");
             englishWords.erase(english);
             englishWords[russianWords[russian]->english]=russianWords[russian];
             return;
@@ -118,7 +118,7 @@ void MainVocabulary::importWord(const QString& english, const QString& russian, 
 
     if (englishWords.contains(english)) {
         Word* existingWord = englishWords[english];
-        if (existingWord->russian != russian) {
+        if (!existingWord->russian.contains(russian)) {
             existingWord->russian += ", " + russian;
             russianWords.erase(existingWord->russian);
             russianWords[existingWord->russian] = existingWord;
@@ -128,7 +128,7 @@ void MainVocabulary::importWord(const QString& english, const QString& russian, 
     }
     else if (russianWords.contains(russian)) {
         Word* existingWord = russianWords[russian];
-        if (existingWord->english != english) {
+        if (!existingWord->english.contains(english)) {
             existingWord->english += ", " + english;
             englishWords.erase(existingWord->english);
             englishWords[existingWord->english] = existingWord;
