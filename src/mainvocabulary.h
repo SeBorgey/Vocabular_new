@@ -2,6 +2,8 @@
 #define MAIN_VOCABULARY_H
 #include <deque>
 #include <QDateTime>
+#include <unordered_map>
+
 struct Word;
 class MainVocabulary
 {
@@ -11,10 +13,13 @@ public:
     void chooseWordsForLearning();
     void addWord(QString russian, QString english);
     void saveWords();
+    void deleteWord(int index);
+    void updateWord(int index, const QString& english, const QString& russian, int times, const QDateTime& lastLearning);
     std::deque<Word*> words;
     std::unordered_map<QString, Word*> englishWords;
     std::unordered_map<QString, Word*> russianWords;
 };
+
 struct Word{
     QString english;
     QString russian;

@@ -33,9 +33,6 @@ void MainVocabulary::getAllWords()
 
 void MainVocabulary::addWord(QString russian, QString english)
 {
-    if (russian == "" || english == ""){
-        return;
-    }
     if (englishWords.contains(english)){
         if(englishWords[english]->russian == russian){
             return;
@@ -82,4 +79,34 @@ void MainVocabulary::saveWords()
         file.write("\n");
     }
     file.close();
+}
+void MainVocabulary::deleteWord(int index)
+{
+    if (index < 0 || index >= words.size()) return;
+
+    Word* word = words[index];
+    englishWords.erase(word->english);
+    russianWords.erase(word->russian);
+    words.erase(words.begin() + index);
+    delete word;
+    saveWords();
+}
+
+void MainVocabulary::updateWord(int index, const QString& english, const QString& russian, int times, const QDateTime& lastLearning)
+{
+    if (index < 0 || index >= words.size()) return;
+
+    Word* word = words[index];
+    englishWords.erase(word->english);
+    russianWords.erase(word->russian);
+
+    word->english = english;
+    word->russian = russian;
+    word->learningTimes = times;
+    word->lastLearning = lastLearning;
+
+    englishWords[english] = word;
+    russianWords[russian] = word;
+
+    saveWords();
 }
