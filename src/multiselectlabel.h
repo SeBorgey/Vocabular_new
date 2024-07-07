@@ -20,8 +20,8 @@ private:
     void updateSelection();
 
     int offsetX;
-    int selection_start;
-    int selection_end;
+    int selectionStart;
+    int selectionEnd;
 };
 
 #endif // MULTISELECTLABEL_H

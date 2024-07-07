@@ -20,7 +20,7 @@
 #include <QMediaPlayer>
 #include <QRegularExpression>
 #include "backend.h"
-#include "main_vocabulary.h"
+#include "mainvocabulary.h"
 #include "multiselectlabel.h"
 #include "subtitleextractor.h"
 #include "subtitleselectiondialog.h"

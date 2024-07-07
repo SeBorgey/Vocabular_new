@@ -32,11 +32,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Vocabular
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        src/mainmenu.h src/mainmenu.cpp src/mainmenu.ui
-        src/learnui.h src/learnui.cpp src/learnui.ui
+        src/mainmenu.h src/mainmenu.cpp
+        src/learnui.h src/learnui.cpp
         src/backend.h src/backend.cpp
-        src/main_vocabulary.h src/main_vocabulary.cpp
-        src/current_learning.h src/current_learning.cpp
+
+
 
 
 
@@ -53,6 +53,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/multiselecttextedit.h src/multiselecttextedit.cpp
         src/customlabel.h src/customlabel.cpp
         src/utilities.h
+        src/mainvocabulary.h src/mainvocabulary.cpp
+        src/currentlearning.h src/currentlearning.cpp
+        src/wordeditor.h src/wordeditor.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Vocabular APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

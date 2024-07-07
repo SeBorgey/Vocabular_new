@@ -12,8 +12,8 @@ public:
     void clearSelection();
     QString getSelectedText() const;
     void setCustomSelection(int start, int end);
-    int selection_start;
-    int selection_end;
+    int selectionStart;
+    int selectionEnd;
 
     void updateSelection();
 protected:

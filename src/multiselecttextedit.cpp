@@ -5,8 +5,8 @@
 
 MultiSelectTextEdit::MultiSelectTextEdit(QWidget* parent) : QTextEdit(parent) {
     setMouseTracking(true);
-    selection_start = 0;
-    selection_end = 0;
+    selectionStart = 0;
+    selectionEnd = 0;
     setReadOnly(true);  // Чтобы предотвратить редактирование
     auto shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(20);
@@ -19,8 +19,8 @@ MultiSelectTextEdit::MultiSelectTextEdit(QWidget* parent) : QTextEdit(parent) {
 void MultiSelectTextEdit::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
         QTextCursor cursor = cursorForPosition(event->pos());
-        selection_start = cursor.position();
-        selection_end = selection_start;
+        selectionStart = cursor.position();
+        selectionEnd = selectionStart;
     }
     QTextEdit::mousePressEvent(event);
 }
@@ -28,7 +28,7 @@ void MultiSelectTextEdit::mousePressEvent(QMouseEvent* event) {
 void MultiSelectTextEdit::mouseMoveEvent(QMouseEvent* event) {
     if (event->buttons() & Qt::LeftButton) {
         QTextCursor cursor = cursorForPosition(event->pos());
-        selection_end = cursor.position();
+        selectionEnd = cursor.position();
         updateSelection();
     }
     QTextEdit::mouseMoveEvent(event);
@@ -36,8 +36,8 @@ void MultiSelectTextEdit::mouseMoveEvent(QMouseEvent* event) {
 
 void MultiSelectTextEdit::updateSelection() {
     QTextCursor cursor = textCursor();
-    cursor.setPosition(selection_start);
-    cursor.setPosition(selection_end, QTextCursor::KeepAnchor);
+    cursor.setPosition(selectionStart);
+    cursor.setPosition(selectionEnd, QTextCursor::KeepAnchor);
     setTextCursor(cursor);
 }
 

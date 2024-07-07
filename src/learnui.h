@@ -2,11 +2,11 @@
 #define LEARNUI_H
 
 #include <QGroupBox>
-#include "main_vocabulary.h"
-#include "current_learning.h"
-namespace Ui {
-class LearnUI;
-}
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include "mainvocabulary.h"
+#include "currentlearning.h"
 
 class LearnUI : public QGroupBox
 {
@@ -14,22 +14,28 @@ class LearnUI : public QGroupBox
 
 public:
     explicit LearnUI(QWidget *parent = nullptr);
-    void set_vocab(Main_vocabulary* vocab);
+    void set_vocab(MainVocabulary* vocab);
     ~LearnUI();
 
     void run_ui();
+
 private slots:
     void on_pushButtonDecline_clicked();
-
     void on_pushButtonAccept_clicked();
-
     void on_pushButtonWord_clicked();
 
 private:
-    Main_vocabulary *main_vocab;
-    Ui::LearnUI *ui;
-    Current_learning *current_learning;
+    MainVocabulary *mainVocab;
+    CurrentLearning *currentLearning;
     std::pair<QString,QString> current;
+
+    QPushButton *pushButtonWord;
+    QPushButton *pushButtonDecline;
+    QPushButton *pushButtonAccept;
+    QVBoxLayout *mainLayout;
+    QHBoxLayout *buttonLayout;
+
+    void setupUi();
 };
 
 #endif // LEARNUI_H

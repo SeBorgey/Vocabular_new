@@ -2,12 +2,12 @@
 #define MAINMENU_H
 
 #include <QGroupBox>
+#include <QPushButton>
+#include <QVBoxLayout>
 #include "mainwindow.h"
 #include "learnui.h"
-#include "main_vocabulary.h"
-namespace Ui {
-class MainMenu;
-}
+#include "mainvocabulary.h"
+#include "wordeditor.h"
 
 class MainMenu : public QGroupBox
 {
@@ -19,14 +19,26 @@ public:
 
 private slots:
     void on_pushButtonWatch_clicked();
-
     void on_pushButtonLearn_clicked();
+    void on_pushButtonEdit_clicked();
+    void on_pushButtonImport_clicked();
+    void on_pushButtonExport_clicked();
 
 private:
     MainWindow *mainWindow;
     LearnUI *learnui;
-    Ui::MainMenu *ui;
-    Main_vocabulary *main_vocab;
+    WordEditor *wordEditor;
+    MainVocabulary *main_vocab;
+
+    QPushButton *pushButtonWatch;
+    QPushButton *pushButtonLearn;
+    QPushButton *pushButtonEdit;
+    QPushButton *pushButtonImport;
+    QPushButton *pushButtonExport;
+    QVBoxLayout *mainLayout;
+
+    void setupUi();
+    void centerWindow();
 };
 
 #endif // MAINMENU_H
