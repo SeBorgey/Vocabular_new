@@ -32,8 +32,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Vocabular
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        src/mainmenu.h src/mainmenu.cpp src/mainmenu.ui
-        src/learnui.h src/learnui.cpp src/learnui.ui
+        src/mainmenu.h src/mainmenu.cpp
+        src/learnui.h src/learnui.cpp
         src/backend.h src/backend.cpp
         src/main_vocabulary.h src/main_vocabulary.cpp
         src/current_learning.h src/current_learning.cpp

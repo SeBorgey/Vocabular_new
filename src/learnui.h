@@ -2,11 +2,11 @@
 #define LEARNUI_H
 
 #include <QGroupBox>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include "main_vocabulary.h"
 #include "current_learning.h"
-namespace Ui {
-class LearnUI;
-}
 
 class LearnUI : public QGroupBox
 {
@@ -18,18 +18,24 @@ public:
     ~LearnUI();
 
     void run_ui();
+
 private slots:
     void on_pushButtonDecline_clicked();
-
     void on_pushButtonAccept_clicked();
-
     void on_pushButtonWord_clicked();
 
 private:
     Main_vocabulary *main_vocab;
-    Ui::LearnUI *ui;
     Current_learning *current_learning;
     std::pair<QString,QString> current;
+
+    QPushButton *pushButtonWord;
+    QPushButton *pushButtonDecline;
+    QPushButton *pushButtonAccept;
+    QVBoxLayout *mainLayout;
+    QHBoxLayout *buttonLayout;
+
+    void setupUi();
 };
 
 #endif // LEARNUI_H
