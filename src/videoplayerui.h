@@ -57,7 +57,7 @@ public:
     QPushButton *manualSubsButton;
     QGroupBox *groupBox_Video;
     QHBoxLayout *videoLayout;
-
+    QPushButton *fullscreenButton;
     void updateVideoSize();
 protected:
     void resizeEvent(QResizeEvent *event);

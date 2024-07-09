@@ -28,7 +28,9 @@ public:
         mouseMoveEvent(event);
     }
 private:
-
+    int findWordBoundary(int position, bool start);
+private:
+    void simulateDoubleClick(const QPoint& pos);
 };
 
 #endif // MULTISELECTTEXTEDIT_H

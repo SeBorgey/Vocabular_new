@@ -56,7 +56,7 @@ void MainWindow::setupConnections()
     connect(ui->addWordButton, &QPushButton::clicked, this, &MainWindow::onAddWordClicked);
     connect(ui->durationSlider, &QSlider::valueChanged, this, &MainWindow::onDurationSliderValueChanged);
     connect(ui->manualSubsButton, &QPushButton::clicked, this, &MainWindow::showSubtitleSelectionDialog);
-
+    connect(ui->fullscreenButton, &QPushButton::clicked, this, &MainWindow::toggleFullScreen);
     connect(playerController, &VideoPlayerController::durationChanged, this, &MainWindow::onDurationChanged);
     connect(playerController, &VideoPlayerController::positionChanged, this, &MainWindow::onPositionChanged);
 
@@ -326,6 +326,9 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         onVolumeClicked();
         break;
     case Qt::Key_F:
+        toggleFullScreen();
+        break;
+    case Qt::Key_Escape:
         toggleFullScreen();
         break;
     default:

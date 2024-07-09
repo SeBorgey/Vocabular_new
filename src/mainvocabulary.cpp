@@ -33,6 +33,8 @@ void MainVocabulary::getAllWords()
 
 void MainVocabulary::addWord(QString russian, QString english)
 {
+    russian = russian.trimmed();
+    english = english.trimmed();
     if (englishWords.contains(english)){
         if(englishWords[english]->russian.contains(russian)){
             return;

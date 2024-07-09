@@ -32,7 +32,8 @@ void VideoPlayerUI::createWidgets()
     groupBox_Video = new QGroupBox(this);
     videoView = new QGraphicsView(groupBox_Video);
     videoItem = new QGraphicsVideoItem();
-
+    fullscreenButton = new QPushButton(this);
+    fullscreenButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarMaxButton));
     groupBox_Video->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     videoView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     videoView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -109,6 +110,7 @@ void VideoPlayerUI::setupLayout()
     controlLayout->addWidget(playPauseButton);
     controlLayout->addWidget(stopButton);
     controlLayout->addWidget(seekForwardButton);
+    controlLayout->addWidget(fullscreenButton);
     controlLayout->addStretch();
     controlLayout->addWidget(volumeButton);
     controlLayout->addWidget(volumeSlider);
