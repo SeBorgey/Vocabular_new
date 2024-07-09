@@ -88,6 +88,9 @@ void VideoPlayerUI::createWidgets()
     videoView->setScene(scene);
     scene->addItem(videoItem);
 
+    englishSubtitleEdit->setVisible(false);
+    russianSubtitleEdit->setVisible(false);
+    addWordButton->setVisible(false);
 }
 
 void VideoPlayerUI::setupLayout()
@@ -135,19 +138,19 @@ void VideoPlayerUI::setupLayout()
     russianSubLayout->addStretch(1);
     innerLayout->addLayout(russianSubLayout);
 
-    innerLayout->addStretch(2);
-
     QHBoxLayout *addButtonLayout = new QHBoxLayout();
     addButtonLayout->addStretch(1);
     addButtonLayout->addWidget(addWordButton);
     addButtonLayout->addStretch(1);
     innerLayout->addLayout(addButtonLayout);
 
-    innerLayout->addStretch(1);
+    innerLayout->addStretch(2);
 
-    innerLayout->addWidget(subtitleButton, 0, Qt::AlignHCenter);
-
-    innerLayout->addStretch(1);
+    QHBoxLayout *subtitleButtonLayout = new QHBoxLayout();
+    subtitleButtonLayout->addStretch(1);
+    subtitleButtonLayout->addWidget(subtitleButton);
+    subtitleButtonLayout->addStretch(1);
+    innerLayout->addLayout(subtitleButtonLayout);
 
     groupBox_Video->setLayout(innerLayout);
 }
