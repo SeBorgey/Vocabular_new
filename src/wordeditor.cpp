@@ -26,8 +26,6 @@ void WordEditor::setupUi()
     tableView->setModel(proxyModel);
 
     tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    connect(tableView->horizontalHeader(), &QHeaderView::sectionResized,
-            this, &WordEditor::updateColumnWidths);
 
     connect(proxyModel, &QSortFilterProxyModel::dataChanged, this, &WordEditor::onCellChanged);
     connect(tableView->horizontalHeader(), &QHeaderView::sectionClicked, this, &WordEditor::onHeaderClicked);
@@ -96,7 +94,9 @@ void WordEditor::onCellChanged(const QModelIndex &topLeft, const QModelIndex &bo
     }
 
     vocabulary->updateWord(row, english, russian, times, lastLearning);
-    populateTable();
+    disconnect(proxyModel, &QSortFilterProxyModel::dataChanged, this, &WordEditor::onCellChanged);
+    model->setItem(row, column, new QStandardItem(newValue));
+    connect(proxyModel, &QSortFilterProxyModel::dataChanged, this, &WordEditor::onCellChanged);
 }
 
 void WordEditor::onHeaderClicked(int logicalIndex)
