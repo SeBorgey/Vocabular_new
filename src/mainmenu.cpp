@@ -94,7 +94,9 @@ void MainMenu::on_pushButtonImport_clicked()
         QMessageBox::critical(this, "Error", "Unable to open the file.");
         return;
     }
-
+#ifdef Q_OS_ANDROID
+    main_vocab->clear();
+#endif
     while (!file.atEnd()) {
         QByteArray line = file.readLine();
         auto s = line.split('|');

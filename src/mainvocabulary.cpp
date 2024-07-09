@@ -82,6 +82,11 @@ void MainVocabulary::saveWords()
     }
     file.close();
 }
+void MainVocabulary::clear(){
+    words.clear();
+    englishWords.clear();
+    russianWords.clear();
+}
 void MainVocabulary::deleteWord(int index)
 {
     if (index < 0 || index >= words.size()) return;

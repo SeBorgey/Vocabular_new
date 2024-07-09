@@ -19,7 +19,7 @@ public:
     std::unordered_map<QString, Word*> englishWords;
     std::unordered_map<QString, Word*> russianWords;
     void importWord(const QString& english, const QString& russian, int times, const QDateTime& lastLearning);
-
+    void clear();
 };
 
 struct Word{

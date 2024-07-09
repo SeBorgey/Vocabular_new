@@ -219,11 +219,13 @@ void VideoPlayerUI::updateFontSizes()
     int subtitleHeight = windowHeight / 5;
     englishSubtitleEdit->setFixedHeight(subtitleHeight);
     russianSubtitleEdit->setFixedHeight(subtitleHeight);
+    subtitleButton->setFixedHeight(subtitleHeight);
 
     int subtitleWidth = windowWidth*0.9;
     englishSubtitleEdit->setFixedWidth(subtitleWidth);
     russianSubtitleEdit->setFixedWidth(subtitleWidth);
     subtitleButton->setFixedWidth(subtitleWidth);
+
 }
 bool VideoPlayerUI::eventFilter(QObject *watched, QEvent *event)
 {
