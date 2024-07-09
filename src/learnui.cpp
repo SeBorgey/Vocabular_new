@@ -17,7 +17,7 @@ void LearnUI::setupUi()
     pushButtonWord = new QPushButton("Word", this);
     pushButtonWord->setMinimumSize(0, 500);
     QFont font;
-    font.setPointSize(20);
+    font.setPointSize(30);
     pushButtonWord->setFont(font);
 
     buttonLayout = new QHBoxLayout();

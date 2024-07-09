@@ -4,10 +4,14 @@
 #include <QGroupBox>
 #include <QPushButton>
 #include <QVBoxLayout>
-#include "mainwindow.h"
 #include "learnui.h"
 #include "mainvocabulary.h"
+
+
+#ifndef Q_OS_ANDROID
+#include "mainwindow.h"
 #include "wordeditor.h"
+#endif
 
 class MainMenu : public QGroupBox
 {
@@ -18,27 +22,34 @@ public:
     ~MainMenu();
 
 private slots:
-    void on_pushButtonWatch_clicked();
     void on_pushButtonLearn_clicked();
-    void on_pushButtonEdit_clicked();
     void on_pushButtonImport_clicked();
     void on_pushButtonExport_clicked();
 
 private:
+#ifndef Q_OS_ANDROID
     MainWindow *mainWindow;
-    LearnUI *learnui;
     WordEditor *wordEditor;
+#endif
+    LearnUI *learnui;
+
     MainVocabulary *main_vocab;
 
-    QPushButton *pushButtonWatch;
     QPushButton *pushButtonLearn;
-    QPushButton *pushButtonEdit;
     QPushButton *pushButtonImport;
     QPushButton *pushButtonExport;
     QVBoxLayout *mainLayout;
 
     void setupUi();
+
+#ifndef Q_OS_ANDROID
     void centerWindow();
+    QPushButton *pushButtonWatch;
+    QPushButton *pushButtonEdit;
+private slots:
+    void on_pushButtonWatch_clicked();
+    void on_pushButtonEdit_clicked();
+#endif
 };
 
 #endif // MAINMENU_H
