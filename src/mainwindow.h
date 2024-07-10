@@ -18,6 +18,7 @@
 #include "hovereventfilter.h"
 #include <QKeyEvent>
 #include "customlabel.h"
+#include "translator.h"
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -75,6 +76,16 @@ private:
     void showSubtitleSelectionDialog();
     void activateSubs();
     HoverEventFilter *hoverFilter;
+private:
+    Translator *translator;
+    QMenu *translationMenu;
+    void showTranslationMenu(const QPoint &pos, bool isEnglish);
+
+private slots:
+    void onTranslationReady(const QStringList &translations);
+    void onTranslationError(const QString &error);
+    void addWordToDictionary(const QString &word, const QString &translation);
+
 };
 
 #endif // MAINWINDOW_H

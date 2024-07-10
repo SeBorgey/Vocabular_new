@@ -91,6 +91,9 @@ void VideoPlayerUI::createWidgets()
     englishSubtitleEdit->setVisible(false);
     russianSubtitleEdit->setVisible(false);
     addWordButton->setVisible(false);
+
+    englishSubtitleEdit->setContextMenuPolicy(Qt::CustomContextMenu);
+    russianSubtitleEdit->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 void VideoPlayerUI::setupLayout()

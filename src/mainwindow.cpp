@@ -19,6 +19,62 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Watch");
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
+
+    translator = new Translator(this);
+        translationMenu = new QMenu(this);
+
+        connect(translator, &Translator::translationReady, this, &MainWindow::onTranslationReady);
+        connect(translator, &Translator::errorOccurred, this, &MainWindow::onTranslationError);
+}
+
+void MainWindow::showTranslationMenu(const QPoint &pos, bool isEnglish)
+{
+    QString selectedText = isEnglish ? ui->englishSubtitleEdit->textCursor().selectedText()
+                                     : ui->russianSubtitleEdit->textCursor().selectedText();
+    if (!selectedText.isEmpty()) {
+        translator->translate(selectedText, isEnglish);
+
+        translationMenu->clear();
+        QAction *loadingAction = translationMenu->addAction("Loading translations...");
+        loadingAction->setEnabled(false);
+
+        translationMenu->popup(pos);
+    }
+}
+
+void MainWindow::onTranslationReady(const QStringList &translations)
+{
+    translationMenu->clear();
+    for (const QString &translation : translations) {
+        QAction *action = translationMenu->addAction(translation);
+        connect(action, &QAction::triggered, this, [this, translation]() {
+            QString selectedText = ui->englishSubtitleEdit->textCursor().selectedText();
+            if (selectedText.isEmpty()) {
+                selectedText = ui->russianSubtitleEdit->textCursor().selectedText();
+            }
+            addWordToDictionary(selectedText, translation);
+        });
+    }
+
+    if (translations.isEmpty()) {
+        QAction *noTranslationAction = translationMenu->addAction("No translations found");
+        noTranslationAction->setEnabled(false);
+    }
+}
+
+void MainWindow::onTranslationError(const QString &error)
+{
+    translationMenu->clear();
+    QAction *errorAction = translationMenu->addAction("Error: " + error);
+    errorAction->setEnabled(false);
+}
+
+void MainWindow::addWordToDictionary(const QString &word, const QString &translation)
+{
+    if (mainVocab) {
+        mainVocab->addWord(word, translation);
+        qDebug() << "Added to dictionary:" << word << "-" << translation;
+    }
 }
 
 MainWindow::~MainWindow()
@@ -60,6 +116,10 @@ void MainWindow::setupConnections()
     connect(playerController, &VideoPlayerController::durationChanged, this, &MainWindow::onDurationChanged);
     connect(playerController, &VideoPlayerController::positionChanged, this, &MainWindow::onPositionChanged);
 
+    connect(ui->englishSubtitleEdit, &QTextEdit::customContextMenuRequested,
+               this, [this](const QPoint &pos) { showTranslationMenu(pos, true); });
+    connect(ui->russianSubtitleEdit, &QTextEdit::customContextMenuRequested,
+               this, [this](const QPoint &pos) { showTranslationMenu(pos, false); });
 }
 
 void MainWindow::handleHoverEnteredSubtitleButton()

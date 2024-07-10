@@ -60,6 +60,7 @@ if(NOT ANDROID)
         src/utilities.h
         src/wordeditor.h
         src/wordeditor.cpp
+        src/translator.h src/translator.cpp
     )
 endif()
 
@@ -67,6 +68,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Vocabular
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+
+
 
 
 
