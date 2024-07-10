@@ -44,13 +44,28 @@ void Translator::onNetworkReply(QNetworkReply *reply)
 QStringList Translator::parseTranslations(const QString &content, bool isEnglish)
 {
     QStringList translations;
-    QRegularExpression re(isEnglish ? R"(<a href=[^>]*>([^<]+)</a>)" : R"(<a href=[^>]*2>([^<]+)</a>)");
-    QRegularExpressionMatchIterator i = re.globalMatch(content);
 
-    while (i.hasNext()) {
-        QRegularExpressionMatch match = i.next();
-        translations.append(match.captured(1));
-        if (translations.size() > 300) break;
+    QRegularExpression classRegex(R"(<td[^>]*class="trans[^"]*"[^>]*>(.*?)<\/td>)");
+    QRegularExpressionMatchIterator classMatches = classRegex.globalMatch(content);
+
+    while (classMatches.hasNext()) {
+        QRegularExpressionMatch classMatch = classMatches.next();
+        QString transContent = classMatch.captured(1);
+
+        QString linkFilter;
+                if (!isEnglish) {
+                    linkFilter = R"(<a[^>]*href=[^>]*l1=1&amp;l2=2[^>]*>(.*?)</a>)";
+                } else {
+                    linkFilter = R"(<a[^>]*href=[^>]*l1=2&amp;l2=1[^>]*>(.*?)</a>)";
+                }
+        QRegularExpression linkRegex(linkFilter);
+        QRegularExpressionMatchIterator linkMatches = linkRegex.globalMatch(transContent);
+
+        while (linkMatches.hasNext()) {
+            QRegularExpressionMatch linkMatch = linkMatches.next();
+            translations.append(linkMatch.captured(1));
+            if (translations.size() > 300) return translations;
+        }
     }
 
     return translations;
