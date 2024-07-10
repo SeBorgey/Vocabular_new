@@ -4,27 +4,39 @@
 LearnUI::LearnUI(QWidget *parent)
     : QGroupBox(parent)
 {
+    setMinimumWidth(600);
     setupUi();
 }
 
 void LearnUI::setupUi()
 {
-    this->setGeometry(0, 0, 875, 725);
     this->setWindowTitle("Learn");
 
     mainLayout = new QVBoxLayout(this);
 
-    pushButtonWord = new QPushButton("Word", this);
-    pushButtonWord->setMinimumSize(0, 500);
+    pushButtonWord = new QPushButton(this);
+    pushButtonWord->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pushButtonWord->setMinimumHeight(500);
+
+    wordLabel = new QLabel(this);
     QFont font;
     font.setPointSize(30);
-    pushButtonWord->setFont(font);
+    wordLabel->setFont(font);
+    wordLabel->setAlignment(Qt::AlignCenter);
+    wordLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    wordLabel->setWordWrap(true);
+
+    QVBoxLayout *innerLayout = new QVBoxLayout(pushButtonWord);
+    innerLayout->addWidget(wordLabel);
+    innerLayout->setContentsMargins(20, 20, 20, 20);  // Добавляем отступы
+
+    pushButtonWord->setLayout(innerLayout);
 
     buttonLayout = new QHBoxLayout();
     buttonLayout->setSpacing(0);
 
     pushButtonDecline = new QPushButton("Decline", this);
-    pushButtonDecline->setMinimumSize(0, 200);
+    pushButtonDecline->setMinimumHeight(200);
     QFont buttonFont;
     buttonFont.setPointSize(14);
     buttonFont.setBold(true);
@@ -32,14 +44,14 @@ void LearnUI::setupUi()
     pushButtonDecline->setStyleSheet("background-color: rgb(198, 70, 0); color: rgb(0, 0, 0);");
 
     pushButtonAccept = new QPushButton("Accept", this);
-    pushButtonAccept->setMinimumSize(0, 200);
+    pushButtonAccept->setMinimumHeight(200);
     pushButtonAccept->setFont(buttonFont);
     pushButtonAccept->setStyleSheet("background-color: rgb(38, 162, 105); color: rgb(0, 0, 0);");
 
     buttonLayout->addWidget(pushButtonDecline);
     buttonLayout->addWidget(pushButtonAccept);
 
-    mainLayout->addWidget(pushButtonWord);
+    mainLayout->addWidget(pushButtonWord, 1);  // Устанавливаем коэффициент растяжения 1
     mainLayout->addLayout(buttonLayout);
 
     setLayout(mainLayout);
@@ -58,7 +70,7 @@ void LearnUI::run_ui(){
     currentLearning = new CurrentLearning(mainVocab);
     currentLearning->chooseWordsForLearning();
     current = currentLearning->getCurrentWord();
-    pushButtonWord->setText(current.first);
+    wordLabel->setText(current.first);
     pushButtonAccept->setEnabled(false);
     pushButtonDecline->setEnabled(false);
 }
@@ -73,7 +85,7 @@ void LearnUI::on_pushButtonDecline_clicked()
     pushButtonDecline->setEnabled(false);
     currentLearning->next();
     current = currentLearning->getCurrentWord();
-    pushButtonWord->setText(current.first);
+    wordLabel->setText(current.first);
     pushButtonWord->setEnabled(true);
 }
 
@@ -83,14 +95,14 @@ void LearnUI::on_pushButtonAccept_clicked()
     pushButtonDecline->setEnabled(false);
     currentLearning->accept();
     current = currentLearning->getCurrentWord();
-    pushButtonWord->setText(current.first);
+    wordLabel->setText(current.first);
     pushButtonWord->setEnabled(true);
 }
 
 void LearnUI::on_pushButtonWord_clicked()
 {
     pushButtonWord->setEnabled(false);
-    pushButtonWord->setText(current.second);
+    wordLabel->setText(current.second);
     pushButtonAccept->setEnabled(true);
     pushButtonDecline->setEnabled(true);
 }
