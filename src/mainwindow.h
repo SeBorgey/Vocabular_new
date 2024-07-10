@@ -19,6 +19,10 @@
 #include <QKeyEvent>
 #include "customlabel.h"
 #include "translator.h"
+struct TranslationContext {
+    QString originalWord;
+    bool isEnglish;
+};
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -54,6 +58,7 @@ private slots:
     void handleHoverEnteredSubtitleButton();
     void handleHoverLeftSubtitleButton();
 private:
+    TranslationContext translationContext;
     enum{
         Hover,
         NotHover
@@ -76,6 +81,7 @@ private:
     void showSubtitleSelectionDialog();
     void activateSubs();
     HoverEventFilter *hoverFilter;
+    QMenu *createScrollableMenu(const QStringList &items);
 private:
     Translator *translator;
     QMenu *translationMenu;

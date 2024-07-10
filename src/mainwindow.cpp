@@ -32,33 +32,21 @@ void MainWindow::showTranslationMenu(const QPoint &pos, bool isEnglish)
     QString selectedText = isEnglish ? ui->englishSubtitleEdit->textCursor().selectedText()
                                      : ui->russianSubtitleEdit->textCursor().selectedText();
     if (!selectedText.isEmpty()) {
+        translationContext.originalWord = selectedText;
+        translationContext.isEnglish = isEnglish;
         translator->translate(selectedText, isEnglish);
-
-        translationMenu->clear();
-        QAction *loadingAction = translationMenu->addAction("Loading translations...");
-        loadingAction->setEnabled(false);
-
-        translationMenu->popup(pos);
     }
 }
 
 void MainWindow::onTranslationReady(const QStringList &translations)
 {
-    translationMenu->clear();
-    for (const QString &translation : translations) {
-        QAction *action = translationMenu->addAction(translation);
-        connect(action, &QAction::triggered, this, [this, translation]() {
-            QString selectedText = ui->englishSubtitleEdit->textCursor().selectedText();
-            if (selectedText.isEmpty()) {
-                selectedText = ui->russianSubtitleEdit->textCursor().selectedText();
-            }
-            addWordToDictionary(selectedText, translation);
-        });
-    }
-
     if (translations.isEmpty()) {
-        QAction *noTranslationAction = translationMenu->addAction("No translations found");
-        noTranslationAction->setEnabled(false);
+        QMenu *menu = new QMenu(this);
+        menu->addAction("No translations found")->setEnabled(false);
+        menu->popup(QCursor::pos());
+    } else {
+        QMenu *scrollableMenu = createScrollableMenu(translations);
+        scrollableMenu->popup(QCursor::pos());
     }
 }
 
@@ -72,11 +60,37 @@ void MainWindow::onTranslationError(const QString &error)
 void MainWindow::addWordToDictionary(const QString &word, const QString &translation)
 {
     if (mainVocab) {
-        mainVocab->addWord(word, translation);
+        if (!translationContext.isEnglish) {
+            mainVocab->addWord(word, translation);
+        } else {
+            mainVocab->addWord(translation, word);
+        }
         qDebug() << "Added to dictionary:" << word << "-" << translation;
     }
 }
+QMenu* MainWindow::createScrollableMenu(const QStringList &items)
+{
+    QMenu *menu = new QMenu(this);
+    QListWidget *listWidget = new QListWidget(menu);
 
+    listWidget->setFixedWidth(250);
+    listWidget->setMaximumHeight(400);
+
+    listWidget->addItems(items);
+
+    QWidgetAction *action = new QWidgetAction(menu);
+    action->setDefaultWidget(listWidget);
+
+    menu->addAction(action);
+
+    connect(listWidget, &QListWidget::itemClicked, this, [this, menu](QListWidgetItem *item) {
+        QString selectedText = item->text();
+        addWordToDictionary(translationContext.originalWord, selectedText);
+        menu->close();
+    });
+
+    return menu;
+}
 MainWindow::~MainWindow()
 {
     delete ui;
