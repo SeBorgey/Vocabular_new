@@ -12,6 +12,14 @@ MainMenu::MainMenu(QWidget *parent)
     setupUi();
     main_vocab = new MainVocabulary();
     learnui = nullptr;
+
+
+    googleDriveManager = new GoogleDriveManager(this);
+
+    connect(googleDriveManager, &GoogleDriveManager::authorizationFinished, this, &MainMenu::onAuthorizationFinished);
+    connect(googleDriveManager, &GoogleDriveManager::downloadFinished, this, &MainMenu::onDownloadFinished);
+    connect(googleDriveManager, &GoogleDriveManager::uploadFinished, this, &MainMenu::onUploadFinished);
+    connect(googleDriveManager, &GoogleDriveManager::fileExistsChecked, this, &MainMenu::onFileExistsChecked, Qt::SingleShotConnection);
 #ifndef Q_OS_ANDROID
     mainWindow = nullptr;    
     wordEditor = nullptr;
@@ -36,6 +44,7 @@ MainMenu::~MainMenu()
 {
     delete main_vocab;
     delete learnui;
+    delete googleDriveManager;
 #ifndef Q_OS_ANDROID
     delete mainWindow;
     delete wordEditor;
@@ -76,12 +85,104 @@ void MainMenu::setupUi()
     mainLayout->addWidget(pushButtonLearn);
     mainLayout->addWidget(pushButtonImport);
     mainLayout->addWidget(pushButtonExport);
+    pushButtonSync = new QPushButton("Sync with Google Drive", this);
+        mainLayout->addWidget(pushButtonSync);
+
+        connect(pushButtonSync, &QPushButton::clicked, this, &MainMenu::on_pushButtonSync_clicked);
 
     setLayout(mainLayout);
 
     connect(pushButtonLearn, &QPushButton::clicked, this, &MainMenu::on_pushButtonLearn_clicked);    
     connect(pushButtonImport, &QPushButton::clicked, this, &MainMenu::on_pushButtonImport_clicked);
     connect(pushButtonExport, &QPushButton::clicked, this, &MainMenu::on_pushButtonExport_clicked);
+
+
+}
+
+void MainMenu::on_pushButtonSync_clicked()
+{
+    if (!googleDriveManager->isAuthorized()) {
+        qDebug()<<"if";
+        connect(googleDriveManager, &GoogleDriveManager::authorizationFinished,
+                this, &MainMenu::syncWithGoogleDrive, Qt::SingleShotConnection);
+        googleDriveManager->authorize();
+    } else {
+        syncWithGoogleDrive();
+        qDebug()<<"else";
+    }
+}
+
+void MainMenu::onAuthorizationFinished()
+{
+    syncWithGoogleDrive();
+}
+
+void MainMenu::syncWithGoogleDrive()
+{
+    // Проверяем наличие файла на Google Drive
+    googleDriveManager->checkFileExists("MyWords.txt");
+}
+
+void MainMenu::onFileExistsChecked(bool exists)
+{
+    QString localFilePath = "MyWords.txt";
+    QFileInfo localFileInfo(localFilePath);
+
+    if (exists) {
+        // Файл существует на Google Drive
+        if (localFileInfo.exists()) {
+            // Сравниваем даты изменения
+            googleDriveManager->getFileModifiedTime("MyWords.txt");
+        } else {
+            // Локального файла нет, скачиваем с Google Drive
+            googleDriveManager->downloadFile("MyWords.txt", localFilePath);
+        }
+    } else {
+        // Файла нет на Google Drive
+        if (localFileInfo.exists()) {
+            // Загружаем локальный файл на Google Drive
+            googleDriveManager->uploadFile(localFilePath);
+        } else {
+            QMessageBox::information(this, "Sync", "No file to sync.");
+        }
+    }
+}
+
+void MainMenu::onFileModifiedTimeReceived(const QDateTime& driveModifiedTime)
+{
+    QString localFilePath = "MyWords.txt";
+    QFileInfo localFileInfo(localFilePath);
+    QDateTime localModifiedTime = localFileInfo.lastModified();
+
+    if (driveModifiedTime > localModifiedTime) {
+        // Google Drive файл новее, скачиваем его
+        googleDriveManager->downloadFile("MyWords.txt", localFilePath);
+    } else if (localModifiedTime > driveModifiedTime) {
+        // Локальный файл новее, загружаем его на Google Drive
+        googleDriveManager->uploadFile(localFilePath);
+    } else {
+        QMessageBox::information(this, "Sync", "Files are already in sync.");
+    }
+}
+
+void MainMenu::onDownloadFinished(bool success)
+{
+    if (success) {
+        QMessageBox::information(this, "Sync", "File successfully downloaded from Google Drive.");
+        main_vocab->clear();
+        main_vocab->getAllWords(); // Перезагружаем слова из обновленного файла
+    } else {
+        QMessageBox::critical(this, "Sync Error", "Failed to download file from Google Drive.");
+    }
+}
+
+void MainMenu::onUploadFinished(bool success)
+{
+    if (success) {
+        QMessageBox::information(this, "Sync", "File successfully uploaded to Google Drive.");
+    } else {
+        QMessageBox::critical(this, "Sync Error", "Failed to upload file to Google Drive.");
+    }
 }
 
 void MainMenu::on_pushButtonImport_clicked()

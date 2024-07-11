@@ -31,7 +31,7 @@ if(NOT ANDROID)
     pkg_check_modules(AVUTIL REQUIRED IMPORTED_TARGET libavutil)
     pkg_check_modules(SWSCALE REQUIRED IMPORTED_TARGET libswscale)
     pkg_check_modules(SWRESAMPLE REQUIRED IMPORTED_TARGET libswresample)
-    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Multimedia MultimediaWidgets)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Multimedia MultimediaWidgets NetworkAuth)
 
     list(APPEND PROJECT_SOURCES
         src/srtparser.h
@@ -61,6 +61,7 @@ if(NOT ANDROID)
         src/wordeditor.h
         src/wordeditor.cpp
         src/translator.h src/translator.cpp
+        src/googledrivemanager.h src/googledrivemanager.cpp
     )
 endif()
 
@@ -68,6 +69,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Vocabular
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+
 
 
 
@@ -92,6 +94,7 @@ if(NOT ANDROID)
     target_link_libraries(Vocabular PRIVATE
         Qt${QT_VERSION_MAJOR}::Multimedia
         Qt${QT_VERSION_MAJOR}::MultimediaWidgets
+        Qt${QT_VERSION_MAJOR}::NetworkAuth
         PkgConfig::AVFORMAT
         PkgConfig::AVCODEC
         PkgConfig::AVUTIL

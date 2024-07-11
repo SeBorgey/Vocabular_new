@@ -6,7 +6,7 @@
 #include <QVBoxLayout>
 #include "learnui.h"
 #include "mainvocabulary.h"
-
+#include "googledrivemanager.h"
 
 #ifndef Q_OS_ANDROID
 #include "mainwindow.h"
@@ -34,7 +34,7 @@ private:
     LearnUI *learnui;
 
     MainVocabulary *main_vocab;
-
+    GoogleDriveManager *googleDriveManager;
     QPushButton *pushButtonLearn;
     QPushButton *pushButtonImport;
     QPushButton *pushButtonExport;
@@ -46,10 +46,18 @@ private:
     void centerWindow();
     QPushButton *pushButtonWatch;
     QPushButton *pushButtonEdit;
+    QPushButton *pushButtonSync;
+    void syncWithGoogleDrive();
 private slots:
     void on_pushButtonWatch_clicked();
     void on_pushButtonEdit_clicked();
 #endif
+    void on_pushButtonSync_clicked();
+    void onAuthorizationFinished();
+    void onFileExistsChecked(bool exists);
+    void onFileModifiedTimeReceived(const QDateTime &driveModifiedTime);
+    void onDownloadFinished(bool success);
+    void onUploadFinished(bool success);
 };
 
 #endif // MAINMENU_H
