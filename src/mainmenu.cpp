@@ -101,25 +101,30 @@ void MainMenu::setupUi()
 
 void MainMenu::on_pushButtonSync_clicked()
 {
+    qDebug() << "Sync button clicked";
     if (!googleDriveManager->isAuthorized()) {
-        qDebug()<<"if";
+        qDebug() << "Not authorized, starting authorization process";
         connect(googleDriveManager, &GoogleDriveManager::authorizationFinished,
-                this, &MainMenu::syncWithGoogleDrive, Qt::SingleShotConnection);
+                this, &MainMenu::onAuthorizationFinished, Qt::SingleShotConnection);
         googleDriveManager->authorize();
     } else {
+        qDebug() << "Already authorized, starting sync";
         syncWithGoogleDrive();
-        qDebug()<<"else";
     }
 }
 
-void MainMenu::onAuthorizationFinished()
+void MainMenu::onAuthorizationFinished(bool success)
 {
-    syncWithGoogleDrive();
+    qDebug() << "Authorization finished, success =" << success;
+    if (success) {
+        syncWithGoogleDrive();
+    } else {
+        QMessageBox::warning(this, "Authorization Failed", "Failed to authorize with Google Drive. Please try again.");
+    }
 }
 
 void MainMenu::syncWithGoogleDrive()
 {
-    // Проверяем наличие файла на Google Drive
     googleDriveManager->checkFileExists("MyWords.txt");
 }
 
@@ -129,18 +134,13 @@ void MainMenu::onFileExistsChecked(bool exists)
     QFileInfo localFileInfo(localFilePath);
 
     if (exists) {
-        // Файл существует на Google Drive
         if (localFileInfo.exists()) {
-            // Сравниваем даты изменения
             googleDriveManager->getFileModifiedTime("MyWords.txt");
         } else {
-            // Локального файла нет, скачиваем с Google Drive
             googleDriveManager->downloadFile("MyWords.txt", localFilePath);
         }
     } else {
-        // Файла нет на Google Drive
         if (localFileInfo.exists()) {
-            // Загружаем локальный файл на Google Drive
             googleDriveManager->uploadFile(localFilePath);
         } else {
             QMessageBox::information(this, "Sync", "No file to sync.");

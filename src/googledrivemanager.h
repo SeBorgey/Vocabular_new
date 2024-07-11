@@ -20,7 +20,7 @@ public:
     void getFileModifiedTime(const QString& fileName);
 
 signals:
-    void authorizationFinished();
+    void authorizationFinished(bool success);
     void downloadFinished(bool success);
     void uploadFinished(bool success);
     void fileExistsChecked(bool exists);
@@ -32,7 +32,6 @@ private slots:
     void onUploadFinished();
 
 private:
-    void refreshToken();
     QString getAccessToken();
     QString getFileId(const QString& fileName);
 
@@ -45,7 +44,6 @@ private:
     const QString SCOPE = "https://www.googleapis.com/auth/drive.file";
     const QString AUTH_URL = "https://accounts.google.com/o/oauth2/auth";
     const QString TOKEN_URL = "https://oauth2.googleapis.com/token";
-    QString getFileIdByName(const QString &fileName);
 public:
     // ...
     void clearStoredAuth();
@@ -53,7 +51,6 @@ public:
 private slots:
     // ...
     void onTokenChanged(const QString &token);
-
 private:
     // ...
     void refreshAccessToken();

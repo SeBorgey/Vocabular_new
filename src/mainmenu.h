@@ -53,7 +53,7 @@ private slots:
     void on_pushButtonEdit_clicked();
 #endif
     void on_pushButtonSync_clicked();
-    void onAuthorizationFinished();
+    void onAuthorizationFinished(bool success);
     void onFileExistsChecked(bool exists);
     void onFileModifiedTimeReceived(const QDateTime &driveModifiedTime);
     void onDownloadFinished(bool success);

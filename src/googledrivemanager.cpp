@@ -4,56 +4,130 @@
 #include <QDesktopServices>
 #include <QOAuthHttpServerReplyHandler>
 
-GoogleDriveManager::GoogleDriveManager(QObject *parent) : QObject(parent)
+GoogleDriveManager::GoogleDriveManager(QObject *parent) : QObject(parent),settings("MIPT", "Vocabular")
 {
+    qDebug() << "Settings file:" << settings.fileName();
     oauth2.setScope(SCOPE);
-    oauth2.setAuthorizationUrl(QUrl(AUTH_URL));
+
+    oauth2.setAuthorizationUrl(QUrl(AUTH_URL + "?access_type=offline&prompt=consent&approval_prompt=force"));
+
     oauth2.setClientIdentifier(CLIENT_ID);
     oauth2.setClientIdentifierSharedKey(CLIENT_SECRET);
     oauth2.setAccessTokenUrl(QUrl(TOKEN_URL));
     auto replyHandler = new QOAuthHttpServerReplyHandler(8080, this);
-            oauth2.setReplyHandler(replyHandler);
-    connect(&oauth2, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,
-            &QDesktopServices::openUrl);
+    oauth2.setReplyHandler(replyHandler);
+    connect(&oauth2, &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser,[=](QUrl url) {
+                   QUrlQuery query(url);
+
+                   query.addQueryItem("prompt", "consent");      // Param required to get data everytime
+                   query.addQueryItem("access_type", "offline"); // Needed for Refresh Token (as AccessToken expires shortly)
+                   url.setQuery(query);
+                   QDesktopServices::openUrl(url);
+               });
     connect(&oauth2, &QOAuth2AuthorizationCodeFlow::granted, this, &GoogleDriveManager::onAuthorizationFinished);
 
     QString storedRefreshToken = settings.value("refresh_token").toString();
-    if (!storedRefreshToken.isEmpty()) {
-        oauth2.setRefreshToken(storedRefreshToken);
-        refreshAccessToken();
-    }
+        qDebug() << "Stored refresh token:" << (storedRefreshToken.isEmpty() ? "empty" : "exists");
+        if (!storedRefreshToken.isEmpty()) {
+            oauth2.setRefreshToken(storedRefreshToken);
+        }
+
 }
 void GoogleDriveManager::refreshAccessToken()
 {
-    connect(&oauth2, &QOAuth2AuthorizationCodeFlow::tokenChanged, this, &GoogleDriveManager::onTokenChanged);
-    oauth2.refreshAccessToken();
+    qDebug() << "Refreshing access token...";
+    if (oauth2.refreshToken().isEmpty()) {
+        qDebug() << "No refresh token available, starting new authorization";
+        authorize();
+        return;
+    }
+    qDebug() << "Refreshing access token...";
+    QUrl url(TOKEN_URL);
+    QUrlQuery query;
+    query.addQueryItem("client_id", CLIENT_ID);
+    query.addQueryItem("client_secret", CLIENT_SECRET);
+    query.addQueryItem("refresh_token", oauth2.refreshToken());
+    query.addQueryItem("grant_type", "refresh_token");
+
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    QNetworkReply *reply = networkManager.post(request, query.toString(QUrl::FullyEncoded).toUtf8());
+    connect(reply, &QNetworkReply::finished, [this, reply]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QJsonDocument jsonResponse = QJsonDocument::fromJson(reply->readAll());
+            QJsonObject jsonObject = jsonResponse.object();
+            QString newAccessToken = jsonObject["access_token"].toString();
+            oauth2.setToken(newAccessToken);
+            qDebug() << "Access token refreshed successfully";
+            emit authorizationFinished(true);
+        } else {
+            qDebug() << "Error refreshing token:" << reply->errorString();
+            clearStoredAuth();
+            authorize();
+        }
+        reply->deleteLater();
+    });
 }
 
 void GoogleDriveManager::onTokenChanged(const QString &token)
 {
     if (!token.isEmpty()) {
-        emit authorizationFinished();
+        emit authorizationFinished(true);
     }
 }
 void GoogleDriveManager::clearStoredAuth()
 {
+    qDebug() << "Clearing stored auth data";
     settings.remove("refresh_token");
+    settings.sync();
+    qDebug() << "Auth data cleared, refresh token is now:" << settings.value("refresh_token").toString();
     oauth2.setRefreshToken(QString());
     oauth2.setToken(QString());
 }
 void GoogleDriveManager::authorize()
 {
-    if (oauth2.refreshToken().isEmpty()) {
+
+    qDebug() << "Authorizing...";
+    QString storedRefreshToken = settings.value("refresh_token").toString();
+    qDebug() << "Stored refresh token:" << (storedRefreshToken.isEmpty() ? "empty" : "exists");
+
+    if (storedRefreshToken.isEmpty()) {
+        qDebug() << "No refresh token, starting new authorization";
+        qDebug() << "Authorization URL:" << oauth2.authorizationUrl().toString();
+        connect(&oauth2, &QOAuth2AuthorizationCodeFlow::error, [this](const QString &error, const QString &errorDescription, const QUrl &uri) {
+            qDebug() << "OAuth Error:" << error << errorDescription << uri;
+            clearStoredAuth();
+            emit authorizationFinished(false);
+        });
         oauth2.grant();
     } else {
+        qDebug() << "Refresh token found, refreshing access token";
+        oauth2.setRefreshToken(storedRefreshToken);
         refreshAccessToken();
     }
 }
 
 void GoogleDriveManager::onAuthorizationFinished()
 {
-    settings.setValue("refresh_token", oauth2.refreshToken());
-    emit authorizationFinished();
+    qDebug() << "Authorization finished";
+
+    qDebug() << "Current access token:" << oauth2.token();
+
+    qDebug() << "Current refresh token:" << oauth2.refreshToken();
+
+    QVariantMap response = oauth2.extraTokens();
+    qDebug() << "Full response from Google:";
+    for(auto it = response.begin(); it != response.end(); ++it) {
+        qDebug() << it.key() << ":" << it.value().toString();
+    }
+
+    QString refreshToken = oauth2.refreshToken();
+    qDebug() << "Saving refresh token:" << (refreshToken.isEmpty() ? "empty" : refreshToken);
+    settings.setValue("refresh_token", refreshToken);
+    settings.sync();
+    qDebug() << "Refresh token saved:" << settings.value("refresh_token").toString();
+    emit authorizationFinished(true);
 }
 
 QString GoogleDriveManager::getAccessToken()
@@ -64,18 +138,23 @@ QString GoogleDriveManager::getAccessToken()
         } else {
             authorize();
         }
+        QEventLoop loop;
+        connect(this, &GoogleDriveManager::authorizationFinished, &loop, &QEventLoop::quit);
+        loop.exec();
     }
     return oauth2.token();
 }
 
 bool GoogleDriveManager::isAuthorized()
 {
-    return !oauth2.token().isEmpty();
+    bool hasToken = !oauth2.token().isEmpty();
+    bool hasRefreshToken = !oauth2.refreshToken().isEmpty();
+    qDebug() << "isAuthorized: hasToken =" << hasToken << ", hasRefreshToken =" << hasRefreshToken;
+    return hasToken || hasRefreshToken;
 }
 
 void GoogleDriveManager::checkFileExists(const QString& fileName)
 {
-    qDebug()<<"checkFileExists";
     QString accessToken = getAccessToken();
     QUrl url("https://www.googleapis.com/drive/v3/files");
     QUrlQuery query;
@@ -163,63 +242,9 @@ QString GoogleDriveManager::getFileId(const QString& fileName)
     return QString();
 }
 
-void GoogleDriveManager::refreshToken()
-{
-    QUrl url(TOKEN_URL);
-    QUrlQuery query;
-    query.addQueryItem("client_id", CLIENT_ID);
-    query.addQueryItem("client_secret", CLIENT_SECRET);
-    query.addQueryItem("refresh_token", oauth2.refreshToken());
-    query.addQueryItem("grant_type", "refresh_token");
-
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QNetworkReply *reply = networkManager.post(request, query.toString(QUrl::FullyEncoded).toUtf8());
-    QObject::connect(reply, &QNetworkReply::finished, [this, reply]() {
-        if (reply->error() == QNetworkReply::NoError) {
-            QJsonDocument jsonResponse = QJsonDocument::fromJson(reply->readAll());
-            QJsonObject jsonObject = jsonResponse.object();
-            QString newAccessToken = jsonObject["access_token"].toString();
-            oauth2.setToken(newAccessToken);
-        }
-        reply->deleteLater();
-    });
-}
-QString GoogleDriveManager::getFileIdByName(const QString& fileName)
-{
-    QString accessToken = getAccessToken();
-    QUrl url("https://www.googleapis.com/drive/v3/files");
-    QUrlQuery query;
-    query.addQueryItem("q", "name='" + fileName + "' and trashed=false");
-    query.addQueryItem("fields", "files(id)");
-    url.setQuery(query);
-
-    QNetworkRequest request(url);
-    request.setRawHeader("Authorization", QString("Bearer %1").arg(accessToken).toUtf8());
-
-    QNetworkReply *reply = networkManager.get(request);
-    QEventLoop loop;
-    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    loop.exec();
-
-    if (reply->error() == QNetworkReply::NoError) {
-        QJsonDocument jsonResponse = QJsonDocument::fromJson(reply->readAll());
-        QJsonObject jsonObject = jsonResponse.object();
-        QJsonArray files = jsonObject["files"].toArray();
-        if (!files.isEmpty()) {
-            return files[0].toObject()["id"].toString();
-        }
-    } else {
-        qDebug() << "Error getting file ID:" << reply->errorString();
-    }
-
-    reply->deleteLater();
-    return QString();
-}
 void GoogleDriveManager::downloadFile(const QString& fileName, const QString& savePath)
 {
-    QString fileId = getFileIdByName(fileName);
+    QString fileId = getFileId(fileName);
     QString accessToken = getAccessToken();
     QUrl url("https://www.googleapis.com/drive/v3/files/" + fileId + "?alt=media");
     QNetworkRequest request(url);
