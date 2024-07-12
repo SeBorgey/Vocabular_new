@@ -5,6 +5,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QLabel>
 #include "mainvocabulary.h"
 #include "currentlearning.h"
 
@@ -29,6 +30,7 @@ private:
     CurrentLearning *currentLearning;
     std::pair<QString,QString> current;
 
+    QLabel *wordLabel;
     QPushButton *pushButtonWord;
     QPushButton *pushButtonDecline;
     QPushButton *pushButtonAccept;

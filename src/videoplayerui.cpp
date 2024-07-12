@@ -32,7 +32,8 @@ void VideoPlayerUI::createWidgets()
     groupBox_Video = new QGroupBox(this);
     videoView = new QGraphicsView(groupBox_Video);
     videoItem = new QGraphicsVideoItem();
-
+    fullscreenButton = new QPushButton(this);
+    fullscreenButton->setIcon(style()->standardIcon(QStyle::SP_TitleBarMaxButton));
     groupBox_Video->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
     videoView->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     videoView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -87,6 +88,12 @@ void VideoPlayerUI::createWidgets()
     videoView->setScene(scene);
     scene->addItem(videoItem);
 
+    englishSubtitleEdit->setVisible(false);
+    russianSubtitleEdit->setVisible(false);
+    addWordButton->setVisible(false);
+
+    englishSubtitleEdit->setContextMenuPolicy(Qt::CustomContextMenu);
+    russianSubtitleEdit->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 void VideoPlayerUI::setupLayout()
@@ -109,6 +116,7 @@ void VideoPlayerUI::setupLayout()
     controlLayout->addWidget(playPauseButton);
     controlLayout->addWidget(stopButton);
     controlLayout->addWidget(seekForwardButton);
+    controlLayout->addWidget(fullscreenButton);
     controlLayout->addStretch();
     controlLayout->addWidget(volumeButton);
     controlLayout->addWidget(volumeSlider);
@@ -133,19 +141,19 @@ void VideoPlayerUI::setupLayout()
     russianSubLayout->addStretch(1);
     innerLayout->addLayout(russianSubLayout);
 
-    innerLayout->addStretch(2);
-
     QHBoxLayout *addButtonLayout = new QHBoxLayout();
     addButtonLayout->addStretch(1);
     addButtonLayout->addWidget(addWordButton);
     addButtonLayout->addStretch(1);
     innerLayout->addLayout(addButtonLayout);
 
-    innerLayout->addStretch(1);
+    innerLayout->addStretch(2);
 
-    innerLayout->addWidget(subtitleButton, 0, Qt::AlignHCenter);
-
-    innerLayout->addStretch(1);
+    QHBoxLayout *subtitleButtonLayout = new QHBoxLayout();
+    subtitleButtonLayout->addStretch(1);
+    subtitleButtonLayout->addWidget(subtitleButton);
+    subtitleButtonLayout->addStretch(1);
+    innerLayout->addLayout(subtitleButtonLayout);
 
     groupBox_Video->setLayout(innerLayout);
 }
@@ -217,11 +225,13 @@ void VideoPlayerUI::updateFontSizes()
     int subtitleHeight = windowHeight / 5;
     englishSubtitleEdit->setFixedHeight(subtitleHeight);
     russianSubtitleEdit->setFixedHeight(subtitleHeight);
+    subtitleButton->setFixedHeight(subtitleHeight);
 
     int subtitleWidth = windowWidth*0.9;
     englishSubtitleEdit->setFixedWidth(subtitleWidth);
     russianSubtitleEdit->setFixedWidth(subtitleWidth);
     subtitleButton->setFixedWidth(subtitleWidth);
+
 }
 bool VideoPlayerUI::eventFilter(QObject *watched, QEvent *event)
 {

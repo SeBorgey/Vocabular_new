@@ -19,8 +19,78 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("Watch");
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
+
+    translator = new Translator(this);
+        translationMenu = new QMenu(this);
+
+        connect(translator, &Translator::translationReady, this, &MainWindow::onTranslationReady);
+        connect(translator, &Translator::errorOccurred, this, &MainWindow::onTranslationError);
 }
 
+void MainWindow::showTranslationMenu(const QPoint &pos, bool isEnglish)
+{
+    QString selectedText = isEnglish ? ui->englishSubtitleEdit->textCursor().selectedText()
+                                     : ui->russianSubtitleEdit->textCursor().selectedText();
+    if (!selectedText.isEmpty()) {
+        translationContext.originalWord = selectedText;
+        translationContext.isEnglish = isEnglish;
+        translator->translate(selectedText, isEnglish);
+    }
+}
+
+void MainWindow::onTranslationReady(const QStringList &translations)
+{
+    if (translations.isEmpty()) {
+        QMenu *menu = new QMenu(this);
+        menu->addAction("No translations found")->setEnabled(false);
+        menu->popup(QCursor::pos());
+    } else {
+        QMenu *scrollableMenu = createScrollableMenu(translations);
+        scrollableMenu->popup(QCursor::pos());
+    }
+}
+
+void MainWindow::onTranslationError(const QString &error)
+{
+    translationMenu->clear();
+    QAction *errorAction = translationMenu->addAction("Error: " + error);
+    errorAction->setEnabled(false);
+}
+
+void MainWindow::addWordToDictionary(const QString &word, const QString &translation)
+{
+    if (mainVocab) {
+        if (!translationContext.isEnglish) {
+            mainVocab->addWord(word, translation);
+        } else {
+            mainVocab->addWord(translation, word);
+        }
+        qDebug() << "Added to dictionary:" << word << "-" << translation;
+    }
+}
+QMenu* MainWindow::createScrollableMenu(const QStringList &items)
+{
+    QMenu *menu = new QMenu(this);
+    QListWidget *listWidget = new QListWidget(menu);
+
+    listWidget->setFixedWidth(250);
+    listWidget->setMaximumHeight(400);
+
+    listWidget->addItems(items);
+
+    QWidgetAction *action = new QWidgetAction(menu);
+    action->setDefaultWidget(listWidget);
+
+    menu->addAction(action);
+
+    connect(listWidget, &QListWidget::itemClicked, this, [this, menu](QListWidgetItem *item) {
+        QString selectedText = item->text();
+        addWordToDictionary(translationContext.originalWord, selectedText);
+        menu->close();
+    });
+
+    return menu;
+}
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -56,10 +126,14 @@ void MainWindow::setupConnections()
     connect(ui->addWordButton, &QPushButton::clicked, this, &MainWindow::onAddWordClicked);
     connect(ui->durationSlider, &QSlider::valueChanged, this, &MainWindow::onDurationSliderValueChanged);
     connect(ui->manualSubsButton, &QPushButton::clicked, this, &MainWindow::showSubtitleSelectionDialog);
-
+    connect(ui->fullscreenButton, &QPushButton::clicked, this, &MainWindow::toggleFullScreen);
     connect(playerController, &VideoPlayerController::durationChanged, this, &MainWindow::onDurationChanged);
     connect(playerController, &VideoPlayerController::positionChanged, this, &MainWindow::onPositionChanged);
 
+    connect(ui->englishSubtitleEdit, &QTextEdit::customContextMenuRequested,
+               this, [this](const QPoint &pos) { showTranslationMenu(pos, true); });
+    connect(ui->russianSubtitleEdit, &QTextEdit::customContextMenuRequested,
+               this, [this](const QPoint &pos) { showTranslationMenu(pos, false); });
 }
 
 void MainWindow::handleHoverEnteredSubtitleButton()
@@ -326,6 +400,9 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         onVolumeClicked();
         break;
     case Qt::Key_F:
+        toggleFullScreen();
+        break;
+    case Qt::Key_Escape:
         toggleFullScreen();
         break;
     default:

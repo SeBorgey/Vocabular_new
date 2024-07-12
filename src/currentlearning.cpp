@@ -27,6 +27,7 @@ void CurrentLearning::checkPack()
         mainVocabulary->words[i]->learningTimes++;
         mainVocabulary->words[i]->lastLearning = QDateTime::currentDateTime();
     }
+    mainVocabulary->saveWords();
 }
 
 std::pair<QString, QString> CurrentLearning::getCurrentWord(){

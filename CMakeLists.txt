@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets NetworkAuth Network)
 
 set(PROJECT_SOURCES
         src/main.cpp
@@ -22,6 +22,7 @@ set(PROJECT_SOURCES
         src/mainmenu.h
         src/mainvocabulary.cpp
         src/mainvocabulary.h
+        src/googledrivemanager.h src/googledrivemanager.cpp
 )
 
 if(NOT ANDROID)
@@ -31,7 +32,7 @@ if(NOT ANDROID)
     pkg_check_modules(AVUTIL REQUIRED IMPORTED_TARGET libavutil)
     pkg_check_modules(SWSCALE REQUIRED IMPORTED_TARGET libswscale)
     pkg_check_modules(SWRESAMPLE REQUIRED IMPORTED_TARGET libswresample)
-    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Multimedia MultimediaWidgets)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Multimedia MultimediaWidgets )
 
     list(APPEND PROJECT_SOURCES
         src/srtparser.h
@@ -60,16 +61,31 @@ if(NOT ANDROID)
         src/utilities.h
         src/wordeditor.h
         src/wordeditor.cpp
+        src/translator.h src/translator.cpp
     )
+endif()
+
+if(ANDROID)
+    set(ANDROID_OPENSSL_ROOT "/opt/android_openssl")
+    set(ANDROID_OPENSSL_LIBS_DIR "${ANDROID_OPENSSL_ROOT}/ssl_3/arm64-v8a")
+
+    add_library(crypto SHARED IMPORTED)
+    set_target_properties(crypto PROPERTIES IMPORTED_LOCATION "${ANDROID_OPENSSL_LIBS_DIR}/libcrypto_3.so")
+
+    add_library(ssl SHARED IMPORTED)
+    set_target_properties(ssl PROPERTIES IMPORTED_LOCATION "${ANDROID_OPENSSL_LIBS_DIR}/libssl_3.so")
+
+    set(ANDROID_EXTRA_LIBS
+        ${ANDROID_EXTRA_LIBS}
+        "${ANDROID_OPENSSL_LIBS_DIR}/libcrypto_3.so"
+        "${ANDROID_OPENSSL_LIBS_DIR}/libssl_3.so"
+        CACHE INTERNAL "")
 endif()
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Vocabular
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-
-
-
     )
 else()
     if(ANDROID)
@@ -83,7 +99,11 @@ else()
     endif()
 endif()
 
-target_link_libraries(Vocabular PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(Vocabular PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::NetworkAuth
+    Qt${QT_VERSION_MAJOR}::Network
+)
 
 if(NOT ANDROID)
     target_link_libraries(Vocabular PRIVATE
@@ -94,6 +114,11 @@ if(NOT ANDROID)
         PkgConfig::AVUTIL
         PkgConfig::SWSCALE
         PkgConfig::SWRESAMPLE
+    )
+else()
+    target_link_libraries(Vocabular PRIVATE
+        crypto
+        ssl
     )
 endif()
 

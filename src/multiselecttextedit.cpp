@@ -7,7 +7,7 @@ MultiSelectTextEdit::MultiSelectTextEdit(QWidget* parent) : QTextEdit(parent) {
     setMouseTracking(true);
     selectionStart = 0;
     selectionEnd = 0;
-    setReadOnly(true);  // Чтобы предотвратить редактирование
+    setReadOnly(true);
     auto shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(20);
     shadow->setOffset(0, 0);
@@ -15,21 +15,49 @@ MultiSelectTextEdit::MultiSelectTextEdit(QWidget* parent) : QTextEdit(parent) {
     setGraphicsEffect(shadow);
     setStyleSheet("color: white; background-color: transparent;");
 }
+void MultiSelectTextEdit::simulateDoubleClick(const QPoint& pos) {
+    QMouseEvent pressEvent(QEvent::MouseButtonPress, pos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent releaseEvent(QEvent::MouseButtonRelease, pos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QMouseEvent dblClickEvent(QEvent::MouseButtonDblClick, pos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
 
+    QTextEdit::mousePressEvent(&pressEvent);
+    QTextEdit::mouseReleaseEvent(&releaseEvent);
+    QTextEdit::mouseDoubleClickEvent(&dblClickEvent);
+}
+int MultiSelectTextEdit::findWordBoundary(int position, bool start) {
+    QTextCursor cursor(document());
+    cursor.setPosition(position);
+    if (start) {
+        cursor.movePosition(QTextCursor::StartOfWord);
+    } else {
+        cursor.movePosition(QTextCursor::EndOfWord);
+    }
+    return cursor.position();
+}
 void MultiSelectTextEdit::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
-        QTextCursor cursor = cursorForPosition(event->pos());
-        selectionStart = cursor.position();
-        selectionEnd = selectionStart;
+        simulateDoubleClick(event->pos());
+        QTextCursor cursor = textCursor();
+        selectionStart = cursor.selectionStart();
+        selectionEnd = cursor.selectionEnd();
+    } else {
+        QTextEdit::mousePressEvent(event);
     }
-    QTextEdit::mousePressEvent(event);
 }
 
 void MultiSelectTextEdit::mouseMoveEvent(QMouseEvent* event) {
     if (event->buttons() & Qt::LeftButton) {
         QTextCursor cursor = cursorForPosition(event->pos());
+        int position = cursor.position();
+        if (position < selectionStart) {
+            cursor.setPosition(position);
+            cursor.setPosition(selectionStart, QTextCursor::KeepAnchor);
+        } else {
+            cursor.setPosition(selectionStart);
+            cursor.setPosition(position, QTextCursor::KeepAnchor);
+        }
+        setTextCursor(cursor);
         selectionEnd = cursor.position();
-        updateSelection();
     }
     QTextEdit::mouseMoveEvent(event);
 }
