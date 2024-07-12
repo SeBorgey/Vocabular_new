@@ -3,7 +3,7 @@
 #include <QtCore>
 #include <QDesktopServices>
 #include <QOAuthHttpServerReplyHandler>
-
+#include <QStandardPaths>
 GoogleDriveManager::GoogleDriveManager(QObject *parent) : QObject(parent),settings("MIPT", "Vocabular")
 {
     qDebug() << "Settings file:" << settings.fileName();
@@ -259,7 +259,9 @@ void GoogleDriveManager::onDownloadFinished()
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
     if (reply->error() == QNetworkReply::NoError) {
         qDebug() << "Download successful";
-        QFile file("MyWords.txt");
+        QString sourceFilePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/MyWords.txt";
+
+        QFile file(sourceFilePath);
         if (file.open(QIODevice::WriteOnly)) {
             file.write(reply->readAll());
             file.close();

@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets NetworkAuth)
 
 set(PROJECT_SOURCES
         src/main.cpp
@@ -22,6 +22,7 @@ set(PROJECT_SOURCES
         src/mainmenu.h
         src/mainvocabulary.cpp
         src/mainvocabulary.h
+        src/googledrivemanager.h src/googledrivemanager.cpp
 )
 
 if(NOT ANDROID)
@@ -31,7 +32,7 @@ if(NOT ANDROID)
     pkg_check_modules(AVUTIL REQUIRED IMPORTED_TARGET libavutil)
     pkg_check_modules(SWSCALE REQUIRED IMPORTED_TARGET libswscale)
     pkg_check_modules(SWRESAMPLE REQUIRED IMPORTED_TARGET libswresample)
-    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Multimedia MultimediaWidgets NetworkAuth)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Multimedia MultimediaWidgets )
 
     list(APPEND PROJECT_SOURCES
         src/srtparser.h
@@ -61,7 +62,6 @@ if(NOT ANDROID)
         src/wordeditor.h
         src/wordeditor.cpp
         src/translator.h src/translator.cpp
-        src/googledrivemanager.h src/googledrivemanager.cpp
     )
 endif()
 
@@ -69,12 +69,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Vocabular
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-
-
-
-
-
-
     )
 else()
     if(ANDROID)
@@ -88,13 +82,15 @@ else()
     endif()
 endif()
 
-target_link_libraries(Vocabular PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(Vocabular PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::NetworkAuth
+)
 
 if(NOT ANDROID)
     target_link_libraries(Vocabular PRIVATE
         Qt${QT_VERSION_MAJOR}::Multimedia
         Qt${QT_VERSION_MAJOR}::MultimediaWidgets
-        Qt${QT_VERSION_MAJOR}::NetworkAuth
         PkgConfig::AVFORMAT
         PkgConfig::AVCODEC
         PkgConfig::AVUTIL
@@ -102,7 +98,6 @@ if(NOT ANDROID)
         PkgConfig::SWRESAMPLE
     )
 endif()
-
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.Vocabular)
 endif()

@@ -15,6 +15,7 @@ MainMenu::MainMenu(QWidget *parent)
 
 
     googleDriveManager = new GoogleDriveManager(this);
+    localFilePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/MyWords.txt";
 
     connect(googleDriveManager, &GoogleDriveManager::authorizationFinished, this, &MainMenu::onAuthorizationFinished);
     connect(googleDriveManager, &GoogleDriveManager::downloadFinished, this, &MainMenu::onDownloadFinished);
@@ -60,6 +61,7 @@ void MainMenu::setupUi()
     pushButtonLearn = new QPushButton("Learn", this);    
     pushButtonImport = new QPushButton("Import Words", this);
     pushButtonExport = new QPushButton("Export Words", this);
+    pushButtonSync = new QPushButton("Sync with Google Drive", this);
 
 #ifndef Q_OS_ANDROID
     pushButtonWatch = new QPushButton("Watch", this);
@@ -77,21 +79,22 @@ void MainMenu::setupUi()
     font.setPointSize(30);
     pushButtonLearn->setFont(font);
     pushButtonImport->setFont(font);
-    pushButtonExport->setFont(font);
-    pushButtonLearn->setMinimumSize(0, 200);
-    pushButtonImport->setMinimumSize(0, 200);
-    pushButtonExport->setMinimumSize(0, 200);
+    pushButtonExport->setFont(font);    
+    pushButtonSync->setFont(font);
+
+    pushButtonSync->setMinimumSize(0, 150);
+    pushButtonLearn->setMinimumSize(0, 150);
+    pushButtonImport->setMinimumSize(0, 150);
+    pushButtonExport->setMinimumSize(0, 150);
 #endif
     mainLayout->addWidget(pushButtonLearn);
     mainLayout->addWidget(pushButtonImport);
     mainLayout->addWidget(pushButtonExport);
-    pushButtonSync = new QPushButton("Sync with Google Drive", this);
-        mainLayout->addWidget(pushButtonSync);
-
-        connect(pushButtonSync, &QPushButton::clicked, this, &MainMenu::on_pushButtonSync_clicked);
+    mainLayout->addWidget(pushButtonSync);
 
     setLayout(mainLayout);
 
+    connect(pushButtonSync, &QPushButton::clicked, this, &MainMenu::on_pushButtonSync_clicked);
     connect(pushButtonLearn, &QPushButton::clicked, this, &MainMenu::on_pushButtonLearn_clicked);    
     connect(pushButtonImport, &QPushButton::clicked, this, &MainMenu::on_pushButtonImport_clicked);
     connect(pushButtonExport, &QPushButton::clicked, this, &MainMenu::on_pushButtonExport_clicked);
@@ -130,7 +133,7 @@ void MainMenu::syncWithGoogleDrive()
 
 void MainMenu::onFileExistsChecked(bool exists)
 {
-    QString localFilePath = "MyWords.txt";
+    // QString localFilePath = "MyWords.txt";
     QFileInfo localFileInfo(localFilePath);
 
     if (exists) {
@@ -150,7 +153,7 @@ void MainMenu::onFileExistsChecked(bool exists)
 
 void MainMenu::onFileModifiedTimeReceived(const QDateTime& driveModifiedTime)
 {
-    QString localFilePath = "MyWords.txt";
+    // QString localFilePath = "MyWords.txt";
     QFileInfo localFileInfo(localFilePath);
     QDateTime localModifiedTime = localFileInfo.lastModified();
 
@@ -218,17 +221,18 @@ void MainMenu::on_pushButtonImport_clicked()
 
 void MainMenu::on_pushButtonExport_clicked()
 {
-    QString sourceFilePath = "MyWords.txt";
+    // QString sourceFilePath = "MyWords.txt";
 
-    if (!QFile::exists(sourceFilePath)) {
+    if (!QFile::exists(localFilePath)) {
         QMessageBox::critical(this, "Error", "Source file 'MyWords.txt' does not exist.");
         return;
     }
 
-    QString filePath = QFileDialog::getSaveFileName(this, "Save Words File", "MyWords.txt", "Text Files (*.txt)");
+    QString initialPath = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)+ "/MyWords.txt";
+    QString filePath = QFileDialog::getSaveFileName(this, "Save Words File", initialPath, "Text Files (*.txt)");
     if (filePath.isEmpty()) return;
 
-    QFile sourceFile(sourceFilePath);
+    QFile sourceFile(localFilePath);
     QFile destFile(filePath);
 
     if (!sourceFile.open(QIODevice::ReadOnly)) {

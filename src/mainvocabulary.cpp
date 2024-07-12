@@ -2,15 +2,18 @@
 #include <QFile>
 #include <QStringList>
 #include <QDebug>
-
+#include <QStandardPaths>
+#include <QFileInfo>
+#include <QDir>
 MainVocabulary::MainVocabulary()
 {
+    sourceFilePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/MyWords.txt";
     getAllWords();
 }
 
 void MainVocabulary::getAllWords()
-{
-    QFile file("MyWords.txt");
+{    
+    QFile file(sourceFilePath);
     if (!file.open(QIODevice::ReadOnly)) {
         return;
     }
@@ -66,10 +69,20 @@ void MainVocabulary::addWord(QString russian, QString english)
 
 void MainVocabulary::saveWords()
 {
-    QFile file("MyWords.txt");
-    if (!file.open(QIODevice::WriteOnly)) {
-        return;
-    }
+    QFileInfo fileInfo(sourceFilePath);
+       QDir dir = fileInfo.dir();
+       if (!dir.exists()) {
+           if (!dir.mkpath(".")) {
+               qDebug() << "Не удалось создать директории для файла";
+               return;
+           }
+       }
+
+       QFile file(sourceFilePath);
+       if (!file.open(QIODevice::WriteOnly)) {
+           qDebug() << "Не удалось открыть файл для записи";
+           return;
+       }
     for(auto& el: words){
         QByteArray s;
         QByteArray dot = QString("|").toUtf8();
