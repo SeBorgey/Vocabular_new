@@ -28,7 +28,7 @@ void LearnUI::setupUi()
 
     QVBoxLayout *innerLayout = new QVBoxLayout(pushButtonWord);
     innerLayout->addWidget(wordLabel);
-    innerLayout->setContentsMargins(20, 20, 20, 20);  // Добавляем отступы
+    innerLayout->setContentsMargins(20, 20, 20, 20);
 
     pushButtonWord->setLayout(innerLayout);
 
