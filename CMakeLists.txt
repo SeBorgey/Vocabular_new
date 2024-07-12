@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets NetworkAuth)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets NetworkAuth Network)
 
 set(PROJECT_SOURCES
         src/main.cpp
@@ -65,6 +65,23 @@ if(NOT ANDROID)
     )
 endif()
 
+if(ANDROID)
+    set(ANDROID_OPENSSL_ROOT "/opt/android_openssl")
+    set(ANDROID_OPENSSL_LIBS_DIR "${ANDROID_OPENSSL_ROOT}/ssl_3/arm64-v8a")
+
+    add_library(crypto SHARED IMPORTED)
+    set_target_properties(crypto PROPERTIES IMPORTED_LOCATION "${ANDROID_OPENSSL_LIBS_DIR}/libcrypto_3.so")
+
+    add_library(ssl SHARED IMPORTED)
+    set_target_properties(ssl PROPERTIES IMPORTED_LOCATION "${ANDROID_OPENSSL_LIBS_DIR}/libssl_3.so")
+
+    set(ANDROID_EXTRA_LIBS
+        ${ANDROID_EXTRA_LIBS}
+        "${ANDROID_OPENSSL_LIBS_DIR}/libcrypto_3.so"
+        "${ANDROID_OPENSSL_LIBS_DIR}/libssl_3.so"
+        CACHE INTERNAL "")
+endif()
+
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Vocabular
         MANUAL_FINALIZATION
@@ -85,6 +102,7 @@ endif()
 target_link_libraries(Vocabular PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::NetworkAuth
+    Qt${QT_VERSION_MAJOR}::Network
 )
 
 if(NOT ANDROID)
@@ -97,7 +115,13 @@ if(NOT ANDROID)
         PkgConfig::SWSCALE
         PkgConfig::SWRESAMPLE
     )
+else()
+    target_link_libraries(Vocabular PRIVATE
+        crypto
+        ssl
+    )
 endif()
+
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.Vocabular)
 endif()

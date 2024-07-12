@@ -281,13 +281,44 @@ void GoogleDriveManager::onDownloadFinished()
 void GoogleDriveManager::uploadFile(const QString& filePath)
 {
     QString accessToken = getAccessToken();
-    QUrl url("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart");
+    QString fileName = QFileInfo(filePath).fileName();
+
+    QUrl searchUrl("https://www.googleapis.com/drive/v3/files");
+    QUrlQuery query;
+    query.addQueryItem("q", QString("name='%1' and trashed=false").arg(fileName));
+    searchUrl.setQuery(query);
+
+    QNetworkRequest searchRequest(searchUrl);
+    searchRequest.setRawHeader("Authorization", QString("Bearer %1").arg(accessToken).toUtf8());
+
+    QNetworkReply *searchReply = networkManager.get(searchRequest);
+    QEventLoop loop;
+    connect(searchReply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    QString fileId;
+    if (searchReply->error() == QNetworkReply::NoError) {
+        QJsonDocument jsonResponse = QJsonDocument::fromJson(searchReply->readAll());
+        QJsonArray files = jsonResponse.object()["files"].toArray();
+        if (!files.isEmpty()) {
+            fileId = files[0].toObject()["id"].toString();
+        }
+    }
+    searchReply->deleteLater();
+
+    QUrl url;
+    if (fileId.isEmpty()) {
+        url = QUrl("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart");
+    } else {
+        url = QUrl(QString("https://www.googleapis.com/upload/drive/v3/files/%1?uploadType=multipart").arg(fileId));
+    }
+
     QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::RelatedType);
 
     QHttpPart jsonPart;
     jsonPart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/json; charset=UTF-8"));
     QJsonObject json;
-    json["name"] = QFileInfo(filePath).fileName();
+    json["name"] = fileName;
     jsonPart.setBody(QJsonDocument(json).toJson());
 
     QHttpPart filePart;
@@ -303,7 +334,13 @@ void GoogleDriveManager::uploadFile(const QString& filePath)
     QNetworkRequest request(url);
     request.setRawHeader("Authorization", QString("Bearer %1").arg(accessToken).toUtf8());
 
-    QNetworkReply *reply = networkManager.post(request, multiPart);
+    QNetworkReply *reply;
+    if (fileId.isEmpty()) {
+        reply = networkManager.post(request, multiPart);
+    } else {
+        reply = networkManager.sendCustomRequest(request, "PATCH", multiPart);
+    }
+
     multiPart->setParent(reply);
     connect(reply, &QNetworkReply::finished, this, &GoogleDriveManager::onUploadFinished);
 }

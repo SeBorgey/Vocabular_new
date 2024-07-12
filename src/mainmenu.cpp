@@ -21,6 +21,7 @@ MainMenu::MainMenu(QWidget *parent)
     connect(googleDriveManager, &GoogleDriveManager::downloadFinished, this, &MainMenu::onDownloadFinished);
     connect(googleDriveManager, &GoogleDriveManager::uploadFinished, this, &MainMenu::onUploadFinished);
     connect(googleDriveManager, &GoogleDriveManager::fileExistsChecked, this, &MainMenu::onFileExistsChecked, Qt::SingleShotConnection);
+    connect(googleDriveManager, &GoogleDriveManager::fileModifiedTimeReceived, this, &MainMenu::onFileModifiedTimeReceived);
 #ifndef Q_OS_ANDROID
     mainWindow = nullptr;    
     wordEditor = nullptr;
@@ -33,6 +34,10 @@ MainMenu::MainMenu(QWidget *parent)
 
 void MainMenu::on_pushButtonLearn_clicked()
 {
+    if (!QFile::exists(localFilePath)) {
+        QMessageBox::critical(this, "Error", "Vocabulary does not exist.");
+        return;
+    }
     if (!learnui) {
         learnui = new LearnUI();
         learnui->set_vocab(main_vocab);
@@ -104,6 +109,8 @@ void MainMenu::setupUi()
 
 void MainMenu::on_pushButtonSync_clicked()
 {
+    pushButtonSync->setText("Wait");
+    pushButtonSync->setEnabled(false);
     qDebug() << "Sync button clicked";
     if (!googleDriveManager->isAuthorized()) {
         qDebug() << "Not authorized, starting authorization process";
@@ -133,7 +140,6 @@ void MainMenu::syncWithGoogleDrive()
 
 void MainMenu::onFileExistsChecked(bool exists)
 {
-    // QString localFilePath = "MyWords.txt";
     QFileInfo localFileInfo(localFilePath);
 
     if (exists) {
@@ -153,15 +159,12 @@ void MainMenu::onFileExistsChecked(bool exists)
 
 void MainMenu::onFileModifiedTimeReceived(const QDateTime& driveModifiedTime)
 {
-    // QString localFilePath = "MyWords.txt";
     QFileInfo localFileInfo(localFilePath);
     QDateTime localModifiedTime = localFileInfo.lastModified();
 
     if (driveModifiedTime > localModifiedTime) {
-        // Google Drive файл новее, скачиваем его
         googleDriveManager->downloadFile("MyWords.txt", localFilePath);
     } else if (localModifiedTime > driveModifiedTime) {
-        // Локальный файл новее, загружаем его на Google Drive
         googleDriveManager->uploadFile(localFilePath);
     } else {
         QMessageBox::information(this, "Sync", "Files are already in sync.");
@@ -173,10 +176,12 @@ void MainMenu::onDownloadFinished(bool success)
     if (success) {
         QMessageBox::information(this, "Sync", "File successfully downloaded from Google Drive.");
         main_vocab->clear();
-        main_vocab->getAllWords(); // Перезагружаем слова из обновленного файла
+        main_vocab->getAllWords();
     } else {
         QMessageBox::critical(this, "Sync Error", "Failed to download file from Google Drive.");
     }
+    pushButtonSync->setText("Sync with Google Drive");
+    pushButtonSync->setEnabled(true);
 }
 
 void MainMenu::onUploadFinished(bool success)
@@ -186,6 +191,8 @@ void MainMenu::onUploadFinished(bool success)
     } else {
         QMessageBox::critical(this, "Sync Error", "Failed to upload file to Google Drive.");
     }
+    pushButtonSync->setText("Sync with Google Drive");
+    pushButtonSync->setEnabled(true);
 }
 
 void MainMenu::on_pushButtonImport_clicked()
@@ -221,46 +228,37 @@ void MainMenu::on_pushButtonImport_clicked()
 
 void MainMenu::on_pushButtonExport_clicked()
 {
-    // QString sourceFilePath = "MyWords.txt";
+#ifdef Q_OS_ANDROID
+    QMessageBox::critical(this, "Error", "Root is needed for this function");
+    return;
+#endif
 
     if (!QFile::exists(localFilePath)) {
         QMessageBox::critical(this, "Error", "Source file 'MyWords.txt' does not exist.");
         return;
     }
-
     QString initialPath = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)+ "/MyWords.txt";
-    QString filePath = QFileDialog::getSaveFileName(this, "Save Words File", initialPath, "Text Files (*.txt)");
-    if (filePath.isEmpty()) return;
-
-    QFile sourceFile(localFilePath);
-    QFile destFile(filePath);
-
-    if (!sourceFile.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(this, "Error", "Unable to open source file for reading: " + sourceFile.errorString());
+    QString downloadPath = QFileDialog::getSaveFileName(this, "Save Words File", initialPath, "Text Files (*.txt)");
+    if (downloadPath.isEmpty()) {
+        QMessageBox::critical(this, "Error", "Unable to get location.");
         return;
     }
 
-    if (destFile.exists()) {
-        destFile.remove();
+    QString destFilePath = downloadPath;
+
+    if (QFile::exists(destFilePath)) {
+        if (!QFile::remove(destFilePath)) {
+            QMessageBox::critical(this, "Error", "Unable to remove existing file.");
+            return;
+        }
     }
 
-    if (!destFile.open(QIODevice::WriteOnly)) {
-        QMessageBox::critical(this, "Error", "Unable to open destination file for writing: " + destFile.errorString());
-        sourceFile.close();
-        return;
-    }
-
-    QByteArray data = sourceFile.readAll();
-    if (destFile.write(data) == -1) {
-        QMessageBox::critical(this, "Error", "Failed to write data: " + destFile.errorString());
-    } else {
+    if (QFile::copy(localFilePath, destFilePath)) {
         QMessageBox::information(this, "Success", "Words exported successfully.");
+    } else {
+        QMessageBox::critical(this, "Error", "Failed to copy file.");
     }
-
-    sourceFile.close();
-    destFile.close();
 }
-
 #ifndef Q_OS_ANDROID
 void MainMenu::centerWindow()
 {

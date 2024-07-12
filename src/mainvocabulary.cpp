@@ -78,11 +78,11 @@ void MainVocabulary::saveWords()
            }
        }
 
-       QFile file(sourceFilePath);
-       if (!file.open(QIODevice::WriteOnly)) {
-           qDebug() << "Не удалось открыть файл для записи";
-           return;
-       }
+    QFile file(sourceFilePath);
+    if (!file.open(QIODevice::WriteOnly)) {
+       qDebug() << "Не удалось открыть файл для записи";
+       return;
+    }
     for(auto& el: words){
         QByteArray s;
         QByteArray dot = QString("|").toUtf8();
